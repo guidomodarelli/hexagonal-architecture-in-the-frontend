@@ -710,6 +710,8 @@ Para profundizar en dudas comunes al aplicar esta arquitectura en frontend, hay 
 - Reglas de dependencias e importaciones permitidas + ejemplo ESLint: `docs/hex-frontend/Reglas-de-Dependencias.md`
 - Ejemplo completo CreateUser (árbol de carpetas y código): `docs/hex-frontend/Ejemplo-CreateUser.md`
 - ADR sobre la decisión de ubicar DTOs en infraestructura: `docs/adr/0001-dtos-en-infraestructura.md`
+ - DTOs de aplicación vs infraestructura (cuándo/desde dónde/por qué): `docs/hex-frontend/DTOs-Aplicacion-vs-Infraestructura.md`
+ - Ejemplo de lectura (GetUsers) con filtros/paginado: `docs/hex-frontend/Ejemplo-GetUsers.md`
 
 Resumen de decisiones clave:
 - DTOs externos viven en `infraestructura/api/dto`; la aplicación define sus propios inputs (comandos) y no importa DTOs de infra.
