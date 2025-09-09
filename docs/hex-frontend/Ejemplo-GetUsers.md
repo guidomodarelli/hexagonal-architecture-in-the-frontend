@@ -173,3 +173,31 @@ export async function buscarUsuariosDesdeUI(query: string) {
 - `GetUsersResponseDto` y `UsuarioDto` son DTOs de infraestructura: contrato externo HTTP.
 - El repositorio (adaptador) traduce DTO externo → dominio antes de devolver el resultado al caso de uso.
 
+## Variante con Read Model de Aplicación (CQRS)
+
+Si tu UI solo necesita una proyección liviana, definí un read model en aplicación y hacé que el puerto de consulta lo devuelva, evitando construir entidades completas:
+
+```ts
+// aplicacion/resultados/UsuarioListItem.ts
+export interface UsuarioListItem { id: string; nombre: string }
+
+// aplicacion/puertos/UsuarioQuery.ts
+import { UsuarioListItem } from '../resultados/UsuarioListItem';
+export interface UsuarioQuery {
+  search(params: { q?: string; page?: number; limit?: number }): Promise<{ items: UsuarioListItem[]; total: number }>;
+}
+
+// infraestructura/repositorios/UsuarioQueryFetch.ts
+import { UsuarioQuery } from '../../aplicacion/puertos/UsuarioQuery';
+import { UsuarioListItem } from '../../aplicacion/resultados/UsuarioListItem';
+import { getUsuarios } from '../api/getUsuarios';
+
+export class UsuarioQueryFetch implements UsuarioQuery {
+  async search(params: { q?: string; page?: number; limit?: number }) {
+    const { items, total } = await getUsuarios({ query: params.q, page: params.page, limit: params.limit });
+    return { items: items.map(i => ({ id: i.id, nombre: i.nombre }) as UsuarioListItem), total };
+  }
+}
+```
+
+Esto mantiene los DTOs de infraestructura encapsulados y ofrece a la UI un contrato interno estable y optimizado.

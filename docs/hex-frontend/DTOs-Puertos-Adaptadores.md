@@ -130,3 +130,4 @@ infraestructura/repositorios/...      # implementa el puerto usando lo anterior
 - Ejemplo completo CreateUser: `docs/hex-frontend/Ejemplo-CreateUser.md`
  - DTOs de aplicación vs infraestructura (cuándo/desde dónde/por qué): `docs/hex-frontend/DTOs-Aplicacion-vs-Infraestructura.md`
  - Ejemplo de lectura (GetUsers): `docs/hex-frontend/Ejemplo-GetUsers.md`
+ - Repositorios: contratos de retorno y CQRS: `docs/hex-frontend/Repositorios-Contratos-y-CQRS.md`

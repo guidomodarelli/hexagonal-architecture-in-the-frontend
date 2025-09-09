@@ -79,3 +79,6 @@ Si dudás:
 - “¿Esto modela el contrato con la UI/caso de uso?” → Aplicación (`comandos`/`consultas`/`resultados`).
 - “¿Esto modela el contrato con API/SDK/Storage?” → Infraestructura (`api/dto` + `mapper`).
 
+### Nota sobre Read Models (aplicación)
+
+Para consultas (lectura) podés definir modelos de lectura optimizados para la UI (p. ej., `UsuarioListItem`) en `aplicacion/resultados` y hacer que el puerto de consulta los devuelva. No son DTOs de infraestructura: son contratos internos de aplicación. Ver `Repositorios-Contratos-y-CQRS.md`.
