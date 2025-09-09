@@ -21,15 +21,13 @@ export function CreateCourseForm({ onCreate }: Props) {
   const [title, setTitle] = useState('');
   const [duration, setDuration] = useState(''); // como texto para el input
 
-  const canSubmit = () => {
-    const isTitleValid = isCourseTitleValid(title);
-    const isDurationValid = isCourseDurationValid(duration);
-    return isTitleValid && isDurationValid;
-  };
+  const isTitleValid = isCourseTitleValid(title);
+  const isDurationValid = isCourseDurationValid(Number(duration));
+  const canSubmit = isTitleValid && isDurationValid;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canSubmit()) return;
+    if (!canSubmit) return;
     await onCreate({ title, duration: Number(duration) });
     setTitle('');
     setDuration('');
@@ -47,7 +45,7 @@ export function CreateCourseForm({ onCreate }: Props) {
       </label>
 
       <label>
-        Duration (minutes)
+        Duration
         <input
           aria-label="duration"
           value={duration}

@@ -129,7 +129,6 @@ src/
 - domain/repositories: contratos (interfaces) que definen cómo acceder a datos.
 - domain/value-objects: validaciones y reglas encapsuladas (por ejemplo, CourseId, CourseTitle, CourseDuration).
 - infrastructure/*: implementaciones concretas de los repositorios y adaptadores de I/O (REST, GraphQL, etc.).
-- presentation/*: componentes y páginas del UI; deben usar casos de uso o servicios, no lógica de dominio.
 - presentation/*: páginas (Views) y componentes (Components) del UI; deben usar casos de uso o servicios, no lógica de dominio.
 
 ### Buenas prácticas sugeridas

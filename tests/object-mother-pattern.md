@@ -1,6 +1,6 @@
 # Mejora los tests con Object Mother Pattern
 
-El patrón **Object Modeler** facilita y agiliza la creación de datos falsos en nuestras pruebas. En lugar de instanciar manualmente cada objeto o definir valores fijos dentro de los tests, utilizamos funciones que generan datos dinámicos. Para ello podemos apoyarnos en librerías como **Faker**, que se encarga de producir valores aleatorios, o **Fishery**, que nos permite construir funciones de tipo *Factory*.
+El patrón **Object Mother** facilita y agiliza la creación de datos falsos en nuestras pruebas. En lugar de instanciar manualmente cada objeto o definir valores fijos dentro de los tests, utilizamos funciones que generan datos dinámicos. Para ello podemos apoyarnos en librerías como **Faker**, que se encarga de producir valores aleatorios, o **Fishery**, que nos permite construir funciones de tipo *Factory*.
 
 Además de aportar rapidez en la preparación de los datos, la aleatoriedad en su generación añade **robustez y fiabilidad**, evitando que siempre probemos con los mismos valores. Otro beneficio importante es la **legibilidad**: al trabajar con objetos que encapsulan conjuntos de datos, el código de los tests resulta más claro, conciso y fácil de mantener.
 
