@@ -659,3 +659,44 @@ export interface Course {
 ---
 
 👉 En resumen: **sí tiene sentido aplicar ValueObjects en el frontend**, pero con un enfoque práctico: tipos alias + funciones puras en archivos separados. Es más liviano que en backend, pero mantiene la semántica y disciplina del dominio.
+
+### Ejemplo real con arquitectura hexagonal
+
+Imaginemos una aplicación en la que debemos mostrar una lista de localizaciones sobre un mapa. Toda la lógica relacionada con pintar los puntos y manejar la interacción con Google Maps (plugins, zoom, popups, etc.) vive en la **UI**, dentro de nuestros componentes de React.
+
+Por otro lado, en la **infraestructura** tenemos un repositorio encargado de obtener esa lista de localizaciones desde una fuente externa. En este ejemplo, la fuente es un **JSON**. Lo importante es que no podemos modificar ni la estructura ni los nombres de los campos que vienen en ese JSON (como ocurriría si la información viniera de un servicio HTTP externo).
+
+#### Estructura de los datos recibidos (API)
+
+El repositorio recibe objetos con esta forma:
+
+```ts
+export interface ApiLocation {
+  coords: {
+    lat: number;
+    lng: number;
+  };
+  name: string;
+}
+```
+
+#### Estructura de nuestro dominio
+
+En cambio, dentro de nuestro **dominio** definimos la entidad de la forma que nosotros queremos trabajar:
+
+```ts
+export interface Location {
+  latitude: number;
+  longitude: number;
+  name: string;
+}
+```
+
+#### Por qué no adaptamos el dominio al API
+
+No deberíamos condicionar nuestro dominio a cómo nos llegan los datos externos.
+
+* **No tenemos control** sobre los servicios externos, y su contrato podría cambiar en cualquier momento.
+* Preferimos definir **nuestro propio lenguaje** y nomenclatura en el dominio, de manera consistente con las reglas del negocio y el equipo de desarrollo.
+
+Por eso, el repositorio en infraestructura se encarga de hacer la **traducción** entre el `ApiLocation` y nuestro `Location`. De esta forma aislamos la aplicación de los cambios en la fuente de datos, y mantenemos un dominio limpio, estable y expresivo.
