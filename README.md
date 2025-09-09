@@ -51,7 +51,8 @@ Ambas interfaces comparten campos base, pero `Assignee` incluye campos adicional
 La arquitectura hexagonal es agnóstica al framework utilizado. Puede implementarse con React, Vue, Angular o cualquier otro framework frontend. La clave está en seguir los principios de separación de responsabilidades y mantener la lógica de negocio aislada de la infraestructura y presentación.
 
 ```
---> View: Componentes de UI (React, Vue, etc.)
+--> View (Page): orquestación y navegación de la UI
+--> Component: piezas de UI reutilizables y lógica de presentación
 --> Application: Casos de uso y lógica de negocio
 --> Domain: Entidades y reglas de negocio
 --> Infrastructure: Adaptadores para APIs, almacenamiento, etc.
@@ -59,7 +60,7 @@ La arquitectura hexagonal es agnóstica al framework utilizado. Puede implementa
 
 ```
 +---------------------+
-|      View           |
+|  View + Components  |
 |  (React, Vue, etc.) |
 +----------+----------+
            |
@@ -129,6 +130,7 @@ src/
 - domain/value-objects: validaciones y reglas encapsuladas (por ejemplo, CourseId, CourseTitle, CourseDuration).
 - infrastructure/*: implementaciones concretas de los repositorios y adaptadores de I/O (REST, GraphQL, etc.).
 - presentation/*: componentes y páginas del UI; deben usar casos de uso o servicios, no lógica de dominio.
+- presentation/*: páginas (Views) y componentes (Components) del UI; deben usar casos de uso o servicios, no lógica de dominio.
 
 ### Buenas prácticas sugeridas
 - Inyectar repositorios en los casos de uso (evitar acoplar a implementaciones).
@@ -149,6 +151,16 @@ Al organizar la aplicación en capas, surge la pregunta sobre dónde ubicar la l
 Podríamos considerarla infraestructura, ya que el framework es una dependencia externa. Sin embargo, esta capa a menudo sirve como punto de entrada en los tests unitarios, tradicionalmente asociada con la capa de aplicación.
 
 Además, las particularidades de los frameworks frecuentemente limitan la estructura de la aplicación, por ejemplo, requiriendo un archivo `main.ts` dentro de la carpeta `src`. Esto sugiere que la capa de presentación trasciende la simple infraestructura.
+
+### View vs Component (en React)
+
+```text
+View (Page) --> Component --> Use Case --> Repository <--- Impl Repository
+```
+
+- View (Page): entrada a nivel de ruta/pantalla; orquesta la UI, compone componentes, maneja navegación y conecta casos de uso. Debe evitar lógica de dominio.
+- Component: pieza de UI reutilizable con estado/efectos de presentación y validaciones de UI; no contiene reglas de negocio, pero puede invocar casos de uso a través de props o hooks.
+- Beneficio: separar View y Component mejora reusabilidad, testeo y claridad de responsabilidades dentro de la capa de presentación.
 
 ## Tu primer caso de uso utilizando arquitectura hexagonal: Aplicación, dominio e infraestructura
 
