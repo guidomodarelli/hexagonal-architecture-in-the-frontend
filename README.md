@@ -699,3 +699,20 @@ No deberíamos condicionar nuestro dominio a cómo nos llegan los datos externos
 * Preferimos definir **nuestro propio lenguaje** y nomenclatura en el dominio, de manera consistente con las reglas del negocio y el equipo de desarrollo.
 
 Por eso, el repositorio en infraestructura se encarga de hacer la **traducción** entre el `ApiLocation` y nuestro `Location`. De esta forma aislamos la aplicación de los cambios en la fuente de datos, y mantenemos un dominio limpio, estable y expresivo.
+
+---
+
+## Guías ampliadas (DTOs, puertos y adaptadores)
+
+Para profundizar en dudas comunes al aplicar esta arquitectura en frontend, hay guías dedicadas:
+
+- Dónde van los DTOs, puertos y adaptadores, con convenciones y anti‑patrones: `docs/hex-frontend/DTOs-Puertos-Adaptadores.md`
+- Reglas de dependencias e importaciones permitidas + ejemplo ESLint: `docs/hex-frontend/Reglas-de-Dependencias.md`
+- Ejemplo completo CreateUser (árbol de carpetas y código): `docs/hex-frontend/Ejemplo-CreateUser.md`
+- ADR sobre la decisión de ubicar DTOs en infraestructura: `docs/adr/0001-dtos-en-infraestructura.md`
+
+Resumen de decisiones clave:
+- DTOs externos viven en `infraestructura/api/dto`; la aplicación define sus propios inputs (comandos) y no importa DTOs de infra.
+- Puertos (interfaces) en `aplicacion/puertos`; adaptadores (repositorios concretos) en `infraestructura/`.
+- Infraestructura puede importar dominio y aplicación; dominio y aplicación no importan infraestructura.
+- Separar funciones `api/*` del repositorio mejora testabilidad/modularidad; integrarlas en el repositorio es válido si se prefiere simplicidad.
