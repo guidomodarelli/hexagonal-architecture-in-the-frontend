@@ -1,18 +1,22 @@
+# Tests unitarios en frontend
+
 Tests unitarios en frontend: mantenemos la unidad de negocio (caso de uso) pequeña y testeable, pero para cubrir el flujo real del usuario solemos empezar por el componente. Así validamos la ruta UI → caso de uso con bajo acoplamiento.
 
-View ===>  Component ===>  Use Case  ===>  Repository  <---  Implementación
+View ===>  Component ===>  Use Case  ===>  Repository
+                                                ↑
+                                                └- - - - - - - Implementación
 
-          <-----------------Unit test-----------------><--Integration test--->
+          <-----------------Unit test-----------------><---Integration test--->
 <---------------------------------e2e----------------------------------------->
 
-Qué cubren los tests de un componente:
+## Qué cubren los tests de un componente:
 
 - Render básico y estados de UI.
 - Validaciones de UI (no reglas de dominio).
 - Interacción: que invoca el caso de uso con los datos correctos.
 - Estados de envío/errores propios de la presentación.
 
-Qué testear (resumen)
+## Qué testear (resumen)
 
 - Component: que habilita/deshabilita el botón, muestra errores de UI y llama `onCreate` con `{ title, duration }` válidos.
 - View: opcionalmente, que cablea bien dependencias (doble del repo y esperar a `save`).
@@ -38,7 +42,7 @@ test('envía datos válidos', async () => {
 });
 ```
 
-Notas
+## Notas
 
 - Mantener validaciones de dominio en Domain/Application; aquí se muestran validaciones de UI para simplificar el ejemplo.
 - El caso de uso real debería recibir interfaces (repositorios) por parámetro y no conocer implementaciones concretas.
