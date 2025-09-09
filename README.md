@@ -84,42 +84,61 @@ La arquitectura hexagonal es agnóstica al framework utilizado. Puede implementa
 
 ```
 *
-⊢ App.tsx
-⊢ modules/
-  ⊢ courses/
-    ⊢ application/
-      ⊢ use-cases/
-        ⊢ CreateCourse.ts
-        ⊢ DeleteCourse.ts
-        ⊢ GetCourses.ts
-        ⊢ UpdateCourse.ts
-      ⊢ services/
-        ⊢ CourseService.ts
-    ⊢ domain/
-      ⊢ entities/
-        ⊢ Course.ts
-      ⊢ repositories/
-        ⊢ CourseRepository.ts
-      ⊢ value-objects/
-        ⊢ CourseId.ts
-        ⊢ CourseName.ts
-    ⊢ infrastructure/
-      ⊢ rest/
-        ⊢ api/
-          ⊢ CourseApi.ts
-        ⊢ repositories/
-          ⊢ CourseRepositoryImpl.ts
-      ⊢ graphql/
-        ⊢ api/
-          ⊢ CourseGraphQLApi.ts
-        ⊢ repositories/
-          ⊢ CourseGraphQLRepositoryImpl.ts
-    ⊢ presentation/
-      ⊢ components/
-        ⊢ CourseList.tsx
-        ⊢ CourseForm.tsx
-      ⊢ pages/
-        ⊢ CoursesPage.tsx
+```text
+App.tsx
+modules/
+  courses/
+    application/
+      use-cases/
+        CreateCourse.ts
+        DeleteCourse.ts
+        GetCourses.ts
+        UpdateCourse.ts
+    domain/
+      entities/
+        Course.ts
+      repositories/
+        CourseRepository.ts
+      value-objects/
+        CourseId.ts
+        CourseName.ts
+    infrastructure/
+      rest/
+        api/
+          CourseApi.ts
+        repositories/
+          CourseRepositoryImpl.ts
+      graphql/
+        api/
+          CourseGraphQLApi.ts
+        repositories/
+          CourseGraphQLRepositoryImpl.ts
+    presentation/
+      components/
+        CourseList.tsx
+        CourseForm.tsx
+      pages/
+        CoursesPage.tsx
+```
+
+Resumen rápido (qué hace cada carpeta)
+- App.tsx: punto de entrada de la aplicación / composición de dependencias.
+- application/use-cases: casos de uso puros; funciones que orquestan la lógica usando interfaces (repositorios).
+- domain/entities: modelos inmutables y estructuras centrales (sin dependencias de infra).
+- domain/repositories: contratos (interfaces) que definen cómo acceder a datos.
+- domain/value-objects: validaciones y reglas encapsuladas (por ejemplo, CourseId, CourseName).
+- infrastructure/*: implementaciones concretas de los repositorios y adaptadores de I/O (REST, GraphQL, etc.).
+- presentation/*: componentes y páginas del UI; deben usar casos de uso o servicios, no lógica de dominio.
+
+Buenas prácticas sugeridas
+- Inyectar repositorios en los casos de uso (evitar acoplar a implementaciones).
+- Mantener validaciones en value-objects / domain.
+- Los adaptadores (infrastructure) traducen DTOs ↔ domain entities.
+- La capa presentation solo orquesta interacción y muestra errores/validaciones ya provistas por domain/application.
+- Evitar lógica de negocio en componentes UI; usar casos de uso para operaciones complejas.
+- Usar hooks personalizados para encapsular lógica de presentación reutilizable.
+- Mantener las dependencias unidireccionales: presentation → application → domain → infrastructure.
+- Escribir tests unitarios para casos de uso y lógica de dominio, y tests de integración para adaptadores e interacción UI.
 ```
 
 La arquitectura hexagonal busca separar la lógica de negocio de la lógica de interfaz de usuario (mostrar/ocultar elementos, manejo de inputs, etc.).
