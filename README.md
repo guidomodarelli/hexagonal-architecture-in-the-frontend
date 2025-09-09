@@ -16,7 +16,7 @@ Podríamos crear una interfaz TypeScript con campos opcionales:
 
 ```typescript
 interface User {
-  id: UUID;
+  id: string;
   username: string;
   avatarUrl: string;
   name?: string; // Opcional
@@ -28,13 +28,13 @@ Sin embargo, esto añadiría condicionales innecesarios y complicaría el manten
 
 ```typescript
 interface User {
-  id: UUID;
+  id: string;
   username: string;
   avatarUrl: string;
 }
 
 interface Assignee {
-  id: UUID;
+  id: string;
   username: string;
   avatarUrl: string;
   name: string; // Campo requerido para el desplegable
@@ -82,64 +82,63 @@ La arquitectura hexagonal es agnóstica al framework utilizado. Puede implementa
 +---------------------+
 ```
 
-```
-*
 ```text
-App.tsx
-modules/
-  courses/
-    application/
-      use-cases/
-        CreateCourse.ts
-        DeleteCourse.ts
-        GetCourses.ts
-        UpdateCourse.ts
-    domain/
-      entities/
-        Course.ts
-      repositories/
-        CourseRepository.ts
-      value-objects/
-        CourseId.ts
-        CourseName.ts
-    infrastructure/
-      rest/
-        api/
-          CourseApi.ts
+src/
+  App.tsx
+  modules/
+    courses/
+      application/
+        use-cases/
+          CreateCourse.ts
+          DeleteCourse.ts
+          GetCourses.ts
+          UpdateCourse.ts
+      domain/
+        entities/
+          Course.ts
         repositories/
-          CourseRepositoryImpl.ts
-      graphql/
-        api/
-          CourseGraphQLApi.ts
-        repositories/
-          CourseGraphQLRepositoryImpl.ts
-    presentation/
-      components/
-        CourseList.tsx
-        CourseForm.tsx
-      pages/
-        CoursesPage.tsx
+          CourseRepository.ts
+        value-objects/
+          CourseId.ts
+          CourseTitle.ts
+          CourseDuration.ts
+      infrastructure/
+        rest/
+          api/
+            CourseApi.ts
+          repositories/
+            CourseRepositoryImpl.ts
+        graphql/
+          api/
+            CourseGraphQLApi.ts
+          repositories/
+            CourseGraphQLRepositoryImpl.ts
+      presentation/
+        components/
+          CourseList.tsx
+          CourseForm.tsx
+        pages/
+          CoursesPage.tsx
 ```
 
-Resumen rápido (qué hace cada carpeta)
+### Resumen rápido (qué hace cada carpeta)
 - App.tsx: punto de entrada de la aplicación / composición de dependencias.
 - application/use-cases: casos de uso puros; funciones que orquestan la lógica usando interfaces (repositorios).
 - domain/entities: modelos inmutables y estructuras centrales (sin dependencias de infra).
 - domain/repositories: contratos (interfaces) que definen cómo acceder a datos.
-- domain/value-objects: validaciones y reglas encapsuladas (por ejemplo, CourseId, CourseName).
+- domain/value-objects: validaciones y reglas encapsuladas (por ejemplo, CourseId, CourseTitle, CourseDuration).
 - infrastructure/*: implementaciones concretas de los repositorios y adaptadores de I/O (REST, GraphQL, etc.).
 - presentation/*: componentes y páginas del UI; deben usar casos de uso o servicios, no lógica de dominio.
 
-Buenas prácticas sugeridas
+### Buenas prácticas sugeridas
 - Inyectar repositorios en los casos de uso (evitar acoplar a implementaciones).
 - Mantener validaciones en value-objects / domain.
 - Los adaptadores (infrastructure) traducen DTOs ↔ domain entities.
 - La capa presentation solo orquesta interacción y muestra errores/validaciones ya provistas por domain/application.
 - Evitar lógica de negocio en componentes UI; usar casos de uso para operaciones complejas.
 - Usar hooks personalizados para encapsular lógica de presentación reutilizable.
-- Mantener las dependencias unidireccionales: presentation → application → domain → infrastructure.
+- Dirección de dependencias: presentation → application → domain; infrastructure implementa adaptadores que dependen del dominio (no al revés).
 - Escribir tests unitarios para casos de uso y lógica de dominio, y tests de integración para adaptadores e interacción UI.
-```
 
 La arquitectura hexagonal busca separar la lógica de negocio de la lógica de interfaz de usuario (mostrar/ocultar elementos, manejo de inputs, etc.).
 
@@ -147,17 +146,17 @@ Así, si decidimos cambiar de framework en el futuro, la lógica de negocio perm
 
 Al organizar la aplicación en capas, surge la pregunta sobre dónde ubicar la lógica de interfaz de usuario que maneja el framework: ¿es dominio, aplicación o infraestructura?
 
-Podríamos considerarla infraestructura, ya que el framework es una dependencia externa. Sin embargo, esta capa a menudo sirve como punto de entrada en los tests unitarios, tradicionalmente asociado con la capa de aplicación.
+Podríamos considerarla infraestructura, ya que el framework es una dependencia externa. Sin embargo, esta capa a menudo sirve como punto de entrada en los tests unitarios, tradicionalmente asociada con la capa de aplicación.
 
 Además, las particularidades de los frameworks frecuentemente limitan la estructura de la aplicación, por ejemplo, requiriendo un archivo `main.ts` dentro de la carpeta `src`. Esto sugiere que la capa de presentación trasciende la simple infraestructura.
 
-## Tú primer caso de uso utilizando arquitectura hexagonal: Aplicación, dominio e infraestructura
+## Tu primer caso de uso utilizando arquitectura hexagonal: Aplicación, dominio e infraestructura
 
 Vamos a crear un caso de uso desde cero: la creación de un curso. Tenemos un componente React que se encargará de pintar el formulario, manejar errores de validación, etc. Lo que nos interesa ahora es cómo gestionar la lógica de negocio y cómo guardamos los datos del curso.
 
 ### Definiendo la entidad del dominio
 
-Dentro `src/modules/courses/domain/entities` creamos el archivo `Course.ts`:
+Dentro de `src/modules/courses/domain/entities` creamos el archivo `Course.ts`:
 
 ```typescript
 export interface Course {
@@ -190,13 +189,13 @@ export function CreateCourse(request: CreateCourseRequest): Promise<CreateCourse
 
 #### FAQs
 
-**¿Y para que sirve CreateCourseRequest y CreateCourseResponse?**
+**¿Para qué sirven `CreateCourseRequest` y `CreateCourseResponse`?**
 `CreateCourseRequest` define la estructura de los datos necesarios para crear un curso, mientras que `CreateCourseResponse` especifica el tipo de respuesta que el caso de uso devolverá. En este caso, `CreateCourseResponse` es `void`, indicando que no se espera ningún valor de retorno al completar la operación.
 
 **¿Por qué no simplemente usar `Course` como request?**
 Usar `Course` directamente como request podría parecer una solución sencilla, pero no es ideal porque `Course` representa una entidad completa que incluye un `id`, el cual generalmente es generado por el sistema (por ejemplo, una base de datos) al momento de crear el curso. Al definir `CreateCourseRequest`, podemos especificar solo los campos necesarios para la creación del curso, evitando confusión y asegurando que el `id` no sea proporcionado por el cliente.
 
-**¿Y qué pasa con CreateCourseResponse?**
+**¿Y qué pasa con `CreateCourseResponse`?**
 En este caso, `CreateCourseResponse` es `void` porque no necesitamos devolver ningún dato específico tras la creación del curso. Sin embargo, en otros casos de uso, podríamos querer devolver información relevante, como el `id` del curso recién creado o un objeto que represente el curso completo. Definir un tipo de respuesta explícito nos permite mantener la flexibilidad para futuros cambios sin afectar la interfaz del caso de uso.
 
 **¿Por qué no usar `Course` como response?**
@@ -286,12 +285,12 @@ export const ensureCourseIsValid = (course: Course): void => {
 };
 ```
 
-Esta función nos llamaríamos justo antes de guardar el curso dentro de la función `CreateCourse`.
+Llamaríamos a esta función justo antes de guardar el curso dentro de la función `CreateCourse`.
 
 Sin esperar al envío del formulario, queremos proporcionar feedback inmediato mientras el usuario completa los campos; de este modo podemos invocar las funciones de validación individuales y mostrar errores en tiempo real.
 
 ```typescript
-  import { useEffect, useState } from 'react';
+  import { useEffect } from 'react';
   import { isCourseTitleValid, MIN_COURSE_TITLE_LENGTH, MAX_COURSE_TITLE_LENGTH } from '../../domain/value-objects/CourseTitle';
   import { isCourseDurationValid } from '../../domain/value-objects/CourseDuration';
 
@@ -305,4 +304,3 @@ Sin esperar al envío del formulario, queremos proporcionar feedback inmediato m
     });
   }, [formData]);
 ```
-
