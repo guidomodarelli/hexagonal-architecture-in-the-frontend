@@ -1,6 +1,9 @@
 Tests unitarios en frontend: mantenemos la unidad de negocio (caso de uso) pequeña y testeable, pero para cubrir el flujo real del usuario solemos empezar por el componente. Así validamos la ruta UI → caso de uso con bajo acoplamiento.
 
-View → Component → Use Case → Repository ← Implementación
+View ===>  Component ===>  Use Case  ===>  Repository  <---  Implementación
+
+          <-----------------Unit test-----------------><--Integration test--->
+<---------------------------------e2e----------------------------------------->
 
 Qué cubren los tests de un componente:
 
