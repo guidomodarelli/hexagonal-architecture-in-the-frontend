@@ -291,6 +291,10 @@ Esta función nos llamaríamos justo antes de guardar el curso dentro de la func
 Sin esperar al envío del formulario, queremos proporcionar feedback inmediato mientras el usuario completa los campos; de este modo podemos invocar las funciones de validación individuales y mostrar errores en tiempo real.
 
 ```typescript
+  import { useEffect, useState } from 'react';
+  import { isCourseTitleValid, MIN_COURSE_TITLE_LENGTH, MAX_COURSE_TITLE_LENGTH } from '../../domain/value-objects/CourseTitle';
+  import { isCourseDurationValid } from '../../domain/value-objects/CourseDuration';
+
   useEffect(() => {
     const isTitleValid = isCourseTitleValid(formData.title);
     const isDurationValid = isCourseDurationValid(formData.duration);
