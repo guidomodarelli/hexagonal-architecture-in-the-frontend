@@ -87,3 +87,26 @@ Es preferible **no inyectar dependencias** directamente en los servicios de domi
 
 * No deberíamos **mockear los servicios de dominio**, dado que **contienen la lógica esencial del dominio**, precisamente la que deseamos validar en los tests unitarios.
 * Una alternativa viable es **instanciar el servicio de dominio del mismo modo que el caso de uso**, asegurando así una **verificación real y coherente** del comportamiento del sistema.
+
+## Si olvidamos guardar en la base de datos cuando se realiza un `POST /video/video-id`, ¿qué prueba debería fallar?
+
+Los tests unitarios.
+
+**Análisis General**
+
+1️⃣ **Test de integración**
+
+* Este test **no fallaría**, ya que la **integración con la base de datos seguiría siendo correcta**.
+* El problema no radica en la conexión ni en la interacción con la base de datos, sino en que **no se está utilizando realmente**.
+* Por lo tanto, este caso puede **descartarse** como origen del fallo.
+
+2️⃣ **Test unitario**
+
+* Si el test está **bien diseñado** y se especifica que debe invocarse el método `save()` del colaborador `VideoRepository`, entonces **fallaría de manera evidente**.
+* Este fallo permitiría **detectar claramente el problema**, ya que el método esperado no estaría siendo ejecutado.
+
+3️⃣ **Test de aceptación**
+
+* En este caso, el resultado podría **generar dudas** dependiendo de **qué tipo de verificaciones** se realicen.
+* Si el test solo valida que la respuesta HTTP sea **`201 Created`**, **no fallaría**, porque el endpoint seguiría respondiendo correctamente.
+* Sin embargo, si la prueba también **comprueba que el registro existe en la base de datos** tras la ejecución, entonces **sí fallaría**, revelando la ausencia del guardado efectivo.
