@@ -38,6 +38,28 @@ Estos tests se enfocan en validar que la **lógica de negocio** de los casos de 
 
 ---
 
+## 🧩 Tests de integración 🔗 (capa de infraestructura)
+
+Los **tests de integración** nos permiten comprobar de forma aislada que las distintas **implementaciones a nivel de infraestructura** —es decir, los *adapters*— funcionan correctamente.
+
+### 🔍 Propósito
+
+Este tipo de pruebas pueden considerarse una **variante de los tests unitarios**, con la diferencia de que el **objeto de prueba** es una **implementación concreta** de alguno de nuestros **puertos**.
+
+### ⚙️ Comparación entre tipos de test
+
+1️⃣ **Test unitario:**
+
+* Sustituye la interfaz de dominio (*UserRepository*) por un **doble de prueba**.
+* Evalúa el comportamiento de la lógica de negocio **sin depender de implementaciones reales**.
+
+2️⃣ **Test de integración:**
+
+* Evalúa la **implementación real** del componente, por ejemplo, *MySQLUserRepository*.
+* Su objetivo es **verificar que el comportamiento del sistema es el esperado** cuando interactúa con infraestructuras reales (como bases de datos, APIs externas, etc.).
+
+✅ En resumen, los tests de integración garantizan que cada *adapter* de infraestructura se comporte correctamente en un entorno real, complementando la verificación más aislada que proporcionan los tests unitarios.
+
 ## 🧩 Mapeo entre tipos de test y capas de la arquitectura
 
 El siguiente diagrama muestra qué tipo de test cubre cada capa dentro de la **arquitectura hexagonal**:
