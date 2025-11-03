@@ -1,30 +1,39 @@
-# Servicios de Infraestructura
+# 🏗️ Servicios de Infraestructura
 
-Aspectos a tener en cuenta:
+## 🔍 Aspectos clave a tener en cuenta
 
-* Las particularidades de cada adaptador o implementación de nuestras interfaces se especifican mediante **inyección a través del constructor**. Ejemplos:
+* Las particularidades de cada **adaptador** o **implementación** de nuestras interfaces se definen mediante **inyección a través del constructor**.
+  **Ejemplos:**
 
   * Conexión con la base de datos en los repositorios.
   * *Sender* y credenciales SMTP en el servicio de notificación por correo electrónico.
   * Canal y API Key en el servicio de notificación vía Slack.
-  * ...
-
-* Debemos **evitar el acoplamiento estructural** en nuestras interfaces, asegurándonos de no vincular los contratos, la lógica o el flujo de llamadas a conceptos relacionados con una implementación específica.
-
-  * Esto significa que, al diseñar nuestras interfaces, no debemos limitarlas ni condicionarlas a una implementación concreta. En su lugar, deben ser **independientes** de cómo se realice la implementación real.
-  * **Beneficios:**
-
-    * ✅ **Flexibilidad:** Permite cambiar o reemplazar implementaciones sin afectar el resto del sistema.
-    * ✅ **Pruebas:** Facilita el uso de *mocks* o *stubs* en las pruebas unitarias, ya que las dependencias no están acopladas a una implementación específica.
-    * ✅ **Mantenimiento:** El código resulta más fácil de mantener y extender, dado que los cambios en una implementación no impactan otras partes del sistema.
-
-* Para ejecutar los *tests*, utilizaremos **implementaciones falsas (fakes)** de los servicios del sistema, como el servicio de envío de correos electrónicos.
+  * Otros servicios análogos.
 
 ---
 
-## Estructura de carpetas
+### 🚫 Evitar el acoplamiento estructural
 
-En esta jerarquía podemos observar que, dentro de cada módulo de nuestra aplicación —*usuarios* y *videos*—, existen tres carpetas principales, una para cada capa de la arquitectura:
+Debemos **evitar el acoplamiento estructural** en nuestras interfaces, garantizando que los contratos, la lógica y el flujo de llamadas **no dependan** de una implementación específica.
+
+* Esto implica que las interfaces deben diseñarse de forma **independiente**, sin verse condicionadas por cómo se implementarán.
+* **Beneficios principales:**
+
+  * ✅ **Flexibilidad:** Permite intercambiar implementaciones sin afectar otras partes del sistema.
+  * ✅ **Pruebas:** Facilita el uso de *mocks* o *stubs* en tests unitarios.
+  * ✅ **Mantenimiento:** Mejora la extensibilidad y la capacidad de mantener el código, reduciendo el impacto de los cambios.
+
+---
+
+### 🧪 Pruebas
+
+Para ejecutar los *tests*, se utilizarán **implementaciones falsas (*fakes*)** de los servicios del sistema, como por ejemplo el servicio de envío de correos electrónicos.
+
+---
+
+## 🗂️ Estructura de carpetas
+
+Dentro de cada módulo de la aplicación —*usuarios* y *videos*— existen tres carpetas principales, una por cada capa de la arquitectura:
 
 ```plain
 --> entry-point
@@ -45,12 +54,16 @@ En esta jerarquía podemos observar que, dentro de cada módulo de nuestra aplic
     --> infrastructure
 ```
 
-## Módulo o subdominios
+---
 
-Los módulos son agrupaciones de código basadas en los conceptos principales de nuestra aplicación.
-En el ejemplo anterior se mostraban los módulos de *videos* y *usuarios*. En cada uno de ellos se agrupan los casos de uso correspondientes, los conceptos de dominio y la infraestructura relacionada.
+## 🧩 Módulos o subdominios
 
-Este enfoque es importante porque invierte la jerarquía tradicional del directorio. Al agrupar el código por conceptos, la estructura resultante sería similar a la siguiente:
+Los **módulos** agrupan el código en función de los conceptos centrales de la aplicación.
+En el ejemplo anterior, los módulos *videos* y *usuarios* contienen sus casos de uso, sus entidades de dominio y la infraestructura correspondiente.
+
+Este enfoque **invierte la jerarquía tradicional de carpetas**, priorizando el dominio sobre la arquitectura.
+
+### 📁 Ejemplo de estructura modular
 
 ```plain
 module/video
@@ -69,31 +82,37 @@ module/video
     --> MySQLVideoRepository
 ```
 
-Las razones para situar los conceptos del sistema en el primer nivel de la jerarquía son las siguientes:
+---
 
-* ✅ **Cohesión y facilidad para encontrar lo que se busca:**
+### 💡 Ventajas del enfoque modular
 
-  * La aplicación prioriza los conceptos del dominio por encima de los relacionados con la arquitectura del software. Esto hace que el dominio sea más visible y simplifica la localización de los elementos necesarios.
-  * Los conceptos pertenecientes a un mismo módulo se encuentran próximos entre sí, lo que facilita moverse entre los distintos componentes que deben modificarse.
+* ✅ **Cohesión y localización eficiente**
 
-* ✅ **Escalabilidad y mantenibilidad del código:**
+  * La aplicación resalta los conceptos de dominio por encima de la arquitectura.
+  * Los elementos relacionados entre sí están próximos, facilitando su mantenimiento y comprensión.
 
-  * Dividir la aplicación en módulos o subdominios favorece su mantenibilidad a lo largo del tiempo.
-  * Este enfoque promueve un cierto grado de aislamiento entre los módulos, ya que cada carpeta de módulo, junto con la carpeta *shared*, contiene todo lo necesario para su funcionamiento, lo que facilita dicho aislamiento.
+* ✅ **Escalabilidad y mantenibilidad**
 
-Podemos observar cómo los elementos se traducen del plano conceptual a términos concretos:
+  * Dividir la aplicación en módulos o subdominios mejora la mantenibilidad.
+  * Cada módulo (junto con *shared*) contiene todos los elementos necesarios para su funcionamiento, favoreciendo el aislamiento.
 
-* **Controller:** VideoGetController
-* **ApplicationService:** VideoSearcher
-* **Model:** Video
-* **Repository Contract:** VideoRepository
-* **Repository Implementation:** MySQLVideoRepository
+---
 
-## Infraestructura compartida
+### 🔄 Correspondencia entre elementos conceptuales y concretos
 
-¿Qué hacemos con los aspectos de infraestructura compartidos entre los distintos módulos?
+| Concepto                      | Implementación         |
+| ----------------------------- | ---------------------- |
+| **Controller**                | `VideoGetController`   |
+| **ApplicationService**        | `VideoSearcher`        |
+| **Model**                     | `Video`                |
+| **Repository Contract**       | `VideoRepository`      |
+| **Repository Implementation** | `MySQLVideoRepository` |
 
-Nos referimos, por ejemplo, a la configuración de la base de datos, la conexión con esta y otros elementos similares. En estos casos, los ubicamos dentro de un módulo denominado *shared*.
+---
+
+## ⚙️ Infraestructura compartida
+
+Los elementos de infraestructura comunes a varios módulos (como la configuración y conexión a la base de datos) se ubican dentro del módulo **shared**.
 
 ```plain
 module/shared/infrastructure
@@ -105,22 +124,27 @@ module/shared/infrastructure
   --> ...
 ```
 
-Asumimos que todos los módulos de la aplicación tendrán acceso a este módulo compartido. Por tanto, si en algún momento trasladamos alguno de ellos a un servicio externo, será necesario llevar también la parte correspondiente del módulo *shared*.
+Todos los módulos acceden a este espacio compartido.
+Si alguno se traslada a un servicio independiente, deberá llevar consigo la parte correspondiente de *shared*.
 
-## Dominio compartido
+---
 
-Otro de los conceptos que compartiremos entre módulos serán los pequeños *Value Objects*, que modelan, por ejemplo, los identificadores de nuestras entidades.
+## 🧱 Dominio compartido
 
-Esto se debe a que, por ejemplo, un video podría contener el identificador del usuario que lo ha publicado. Dado que la relación entre una entidad de un módulo y otra entidad de un módulo distinto se establece a través de este identificador —y no mediante una asociación directa—, con el fin de evitar el acoplamiento, resulta necesario compartir el *UserId* entre ambos módulos.
+Determinados *Value Objects* —como los identificadores de entidades— deben compartirse entre módulos.
+Por ejemplo, un *video* puede contener el identificador del *usuario* que lo publicó.
 
-## Repasemos
+Como las entidades de distintos módulos se relacionan mediante **identificadores** y no mediante asociaciones directas, el uso compartido de objetos como `UserId` **evita el acoplamiento** entre módulos.
 
-1. **¿Cómo especifico el canal de Slack al que enviar notificaciones en mi adaptador para avisar de nuevos videos publicados?**
-   ✅ Mediante inyección de parámetros en el **constructor de la clase**, ya que no forma parte de la interfaz.
+---
 
-2. **¿Qué puedo hacer para evitar enviar correos reales al ejecutar mis tests?**
-   ✅ *Mockear* el componente de infraestructura o **inyectar una implementación *fake***.
+## 🧭 Repaso general
 
-3. **¿Cuándo se produce el acoplamiento estructural?**
-   ✅ Cuando, aunque el código esté desacoplado de una implementación gracias a una **interfaz**, esa interfaz sigue reflejando la **semántica de la implementación**, obliga a usar los métodos en un orden concreto o, en definitiva, su diseño y uso están influidos por alguna implementación específica.
+1️⃣ **¿Cómo especificar el canal de Slack para notificaciones de nuevos videos?**
+✅ Mediante **inyección de parámetros en el constructor**, ya que no forma parte de la interfaz.
 
+2️⃣ **¿Cómo evitar el envío real de correos electrónicos al ejecutar tests?**
+✅ Utilizando un **mock** del componente de infraestructura o **inyectando una implementación *fake***.
+
+3️⃣ **¿Cuándo ocurre el acoplamiento estructural?**
+✅ Cuando, pese a usar una **interfaz**, esta refleja la **semántica de una implementación concreta**, obliga a seguir un orden de llamadas o está influida por una implementación específica.
