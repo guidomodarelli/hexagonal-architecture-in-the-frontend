@@ -1,46 +1,69 @@
-# Active Record vs DataMapper
-
-## Active Record
-
-Este enfoque se basa en que las propias entidades de nuestro dominio contengan la infraestructura necesaria a nivel de persistencia para poder ser persistidas, actualizadas y recuperadas.
-
-Es, por tanto, un patrón ligado a la layered architecture, es decir, la capa de dominio es la que se comunica con la base de datos.
-
-Esto se refleja en el código:
-- Las entidades se extienden de una clase base que permite la gestión de persistencia.
-- Los métodos de interacción con la base de datos están en la propia entidad.
-  ```ts
-  // Crear una instancia de user y a la vez la persistir en base de datos.
-  const user = User.create({ name: "David", occupation: "Code Artist" })
-  // Guardar una instancia ya creada a través del constructor `new`
-  user.save
-  // Busco un usuario en base a datos, en base al criterio de selección.
-  const david = User.findByName("David")
-  // Actualizar el estado de una instancia en base de datos.
-  david.update({ name: "Pepe" })
-  ```
-
-## DataMapper
-
-El patrón DataMapper lo que permite es justamente que nuestras entidades no conozcan nada relativo a cómo son persistidas en la base de datos.
-
-- Por un lado tendremos nuestra entidad video
-  ```ts
-  class Video {
-    id: VideoId;
-    title: VideoTitle;
-  }
-  ```
-- Por otro lado tendremos el fichero de definición YAML o XML que establece el mapeo entre cada una de las entidades y atributos de nuestro sistema, y las tablas y columnas en las que son persistidas.
-- Algo necesario será definir la implementación necesaria para interacciones con la base de datos.
+# 🧩 Active Record vs DataMapper
 
 ---
 
-El trabajo que requiere a nivel de configuración e implementación en el enfoque Data Mapper es mayor. Data Mapper se basa en el pilar de la arquitectura hexagonal. Es decir, partimos de la premisa de que los detalles de infraestructura deben ser altamente tolerantes al cambio, con lo cual nuestro dominio no debe estar acoplado a esta infraestructura.
+## ⚙️ Active Record
 
-## Patrón Repository
+El enfoque **Active Record** se basa en que las propias entidades del dominio contengan toda la infraestructura necesaria para ser **persistidas, actualizadas y recuperadas** desde la base de datos.
 
-Para lograr ese desacoplamiento, establecemos la interfaz `VideoRepository` a nivel de contrato de dominio, es decir, lo que denominaríamos como puerto en términos de Ports and Adapters.
+Este patrón está **estrechamente ligado a la arquitectura en capas (Layered Architecture)**, donde la **capa de dominio** se comunica directamente con la base de datos.
+
+### 📘 Características principales
+
+* Las entidades **heredan de una clase base** que gestiona la persistencia.
+* Los métodos de interacción con la base de datos **residen dentro de la propia entidad**.
+
+```ts
+// Crear una instancia de user y persistirla en la base de datos.
+const user = User.create({ name: "David", occupation: "Code Artist" })
+
+// Guardar una instancia creada a través del constructor `new`.
+user.save()
+
+// Buscar un usuario en la base de datos según un criterio.
+const david = User.findByName("David")
+
+// Actualizar una instancia existente en la base de datos.
+david.update({ name: "Pepe" })
+```
+
+---
+
+## 🧠 DataMapper
+
+El patrón **DataMapper** propone que las entidades del dominio **no conozcan absolutamente nada** sobre cómo se almacenan o recuperan de la base de datos.
+
+### 🧩 Estructura básica
+
+1️⃣ **Entidad del dominio (ejemplo: `Video`)**
+
+```ts
+class Video {
+  id: VideoId;
+  title: VideoTitle;
+}
+```
+
+2️⃣ **Archivo de mapeo (YAML o XML)**
+Define la correspondencia entre las entidades y sus atributos con las **tablas y columnas** en la base de datos.
+
+3️⃣ **Implementación de persistencia**
+Se requiere una capa adicional para definir cómo se realizan las operaciones de lectura y escritura en la base de datos.
+
+---
+
+### 🏗️ Arquitectura
+
+El enfoque **DataMapper** exige más trabajo de configuración e implementación, pero se apoya en los principios de la **arquitectura hexagonal**, donde la infraestructura debe ser **altamente tolerante al cambio**.
+
+👉 El dominio **no debe depender** ni acoplarse a los detalles de persistencia.
+
+---
+
+## 🧱 Patrón Repository
+
+Para lograr el **desacoplamiento** entre dominio e infraestructura, se define una **interfaz de repositorio** en la capa de dominio.
+Esto representa un **contrato o puerto**, siguiendo los principios de **Ports and Adapters**.
 
 ```ts
 interface VideoRepository {
@@ -49,9 +72,23 @@ interface VideoRepository {
 }
 ```
 
-Y declaramos la implementación `VideoRepositoryMySQL` en la capa de infraestructura, es decir, lo que denominaríamos como adaptador en términos de Ports and Adapters.
+Luego, se implementa esa interfaz en la capa de **infraestructura**, creando un **adaptador**, por ejemplo:
 
-Esto permite que a la hora de necesitar recuperar videos o persistirlos, podamos aplicar el Principio de Inversión de Dependencias, o DIP por sus siglas en inglés.
+```ts
+class VideoRepositoryMySQL implements VideoRepository {
+  save(video: Video): void {
+    // Lógica para guardar en MySQL
+  }
+
+  search(id: VideoId): Video | null {
+    // Lógica para buscar en MySQL
+  }
+}
+```
+
+### 💡 Aplicación del Principio de Inversión de Dependencias (DIP)
+
+Gracias a este enfoque, los casos de uso pueden depender **de abstracciones** y no de implementaciones concretas:
 
 ```ts
 class VideoFinder {
@@ -63,12 +100,13 @@ class VideoFinder {
 }
 ```
 
-Como se puede ver en el caso de uso de `VideoFinder`, la ganancia de optar por un patrón DataMapper que separe la lógica de gestión de persistencia de nuestras entidades es que en ningún caso nos estaremos acoplando a detalles de infraestructura, pudiendo cambiar la implementación de la interfaz `VideoRepository` que recibamos desde el exterior sin que tengamos que modificar ni la capa de aplicación ni la de dominio.
+➡️ De esta manera, el **caso de uso `VideoFinder`** no depende de los detalles de la infraestructura.
+Podemos cambiar la implementación de `VideoRepository` (por ejemplo, de MySQL a MongoDB) **sin modificar la capa de aplicación ni la de dominio**.
 
 ---
 
-## Repasemos
+## 🔍 Repasemos
 
-**¿Por qué ubicar cada componente, puertos y adaptadores en dichas capas?**
+**¿Por qué ubicar cada componente, puerto y adaptador en capas específicas?**
 
-Porque gracias a la regla de dependencia garantizaremos la tolerancia al cambio aislando conceptos externos.
+Porque, gracias a la **regla de dependencia**, garantizamos la **tolerancia al cambio** al aislar los conceptos externos y mantener un dominio puro y estable ante variaciones tecnológicas.
