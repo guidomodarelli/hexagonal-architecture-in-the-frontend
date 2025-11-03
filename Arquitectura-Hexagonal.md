@@ -1,19 +1,61 @@
-# Arquitectura Hexagonal
+# 🧱 Arquitectura Hexagonal
 
-**Infraestructura**
-Esta capa contiene los detalles de implementación concretos, como las llamadas a API, DBs, ficheros, I/O, o código que este acoplado a clases de un vendor externo.
-Están las implementaciones de las interfaces que definiremos a nivel de dominio.
+La **Arquitectura Hexagonal** (también conocida como *Ports and Adapters*) busca desacoplar la lógica de negocio central del resto del sistema, permitiendo una mayor flexibilidad, mantenibilidad y capacidad de prueba.
 
-**Application**
-Esta capa se encarga de la comunicación entre la capa de dominio y el mundo exterior, lo que denominamos "casos de uso". Actúa como una barrera transaccional.
+---
 
-**Domain**
-Esta capa contiene la lógica de negocio central de la aplicación y define las reglas de negocio. No depende de ninguna otra capa y puede contener cosas como tipos, interfaces, funciones de validación, Value Objects, Entidades, Servicios de dominio.
+## 🧩 Capas Principales
 
-Las dependencias deben apuntar hacia el interior de las capas, es decir, las capas de nivel inferior deben definir interfaces que las capas de nivel superior pueden utilizar para interactuar con ellas.
+### **1️⃣ Dominio (Domain)**
+
+Es el núcleo de la aplicación y contiene **la lógica de negocio central**.
+Define las **reglas de negocio** y no depende de ninguna otra capa.
+
+Elementos típicos del dominio:
+
+* **Entidades**
+* **Value Objects**
+* **Servicios de dominio**
+* **Tipos e interfaces**
+* **Funciones de validación**
+
+📌 *Ejemplo:* `Auth`, `Product`, `Course`, `AuthRepository`, `ProductRepository`, `CourseRepository`
+
+---
+
+### **2️⃣ Aplicación (Application)**
+
+Actúa como **puente entre el dominio y el mundo exterior**.
+Se encarga de los **casos de uso** y del **flujo transaccional** de la aplicación.
+Aquí es donde se orquesta la comunicación entre las diferentes capas.
+
+📌 *Ejemplo:* `AuthCommand`, `AuthCommandHandler`, `Authenticator`, `CourseCreator`, `CourseRenamer`
+
+---
+
+### **3️⃣ Infraestructura (Infrastructure)**
+
+Contiene las **implementaciones concretas** de los detalles técnicos:
+
+* Llamadas a **APIs**
+* Acceso a **bases de datos**
+* **Ficheros** e **I/O**
+* Código **acoplado a librerías o vendors externos**
+
+Aquí se implementan las **interfaces definidas en el dominio**, traduciéndolas a código funcional según la tecnología utilizada.
+
+📌 *Ejemplo:* `MySQLCourseRepository`, `RedisAuthRepository`
+
+---
+
+## 🧭 Dependencias entre Capas
+
+Las dependencias **siempre deben apuntar hacia el interior**:
+
+> Las capas externas dependen de las internas, **nunca al revés**.
 
 ```
-❌
+❌ Estructura Incorrecta:
 ⊢- application
   ⊢- AuthCommand
   ⊢- AuthCommandHandler
@@ -32,13 +74,16 @@ Las dependencias deben apuntar hacia el interior de las capas, es decir, las cap
   ⊢- RedisAuthRepository
 ```
 
-## Arquitectura Hexagonal + Vertical Slicing
+---
 
-**Vertical Slicing** consiste en dividir el sistema en funcionalidades verticales completas, que atraviesan todas las capas de la arquitectura hexagonal.
-Cada vertical slice es una conjunto de características que proporcionan un valor tangible al usuario y que se implementa de forma independiente.
+## 🏗️ Arquitectura Hexagonal + Vertical Slicing
+
+El concepto de **Vertical Slicing** propone dividir el sistema en **funcionalidades verticales completas**, donde cada *slice* incluye todas las capas necesarias (dominio, aplicación e infraestructura) para entregar un valor funcional al usuario.
+
+Cada módulo es **independiente**, lo que favorece la modularidad, la escalabilidad y el trabajo en paralelo entre equipos.
 
 ```
-✅
+✅ Estructura Recomendada:
 ⊢- auth
   ⊢- application
     ...
@@ -56,15 +101,31 @@ Cada vertical slice es una conjunto de características que proporcionan un valo
 ...
 ```
 
-### Regla de dependencia
+---
 
-Esta regla establece que el código de cada capa solo debe conocer las clases ubicadas en la capa inmediatamente inferior. El orden de las capas se entiende desde el exterior hacia el interior del círculo:
+## ⚙️ Regla de Dependencia
 
-Infraestructura --> Aplicación --> Dominio
+La **regla de dependencia** establece que **cada capa solo debe conocer las clases de la capa inmediatamente inferior**.
 
-Esta norma nos permite modificar los elementos de las capas más externas sin afectar las internas. Por ello, tiene más sentido que los aspectos con mayor variabilidad —aquellos que no dependen directamente de nosotros— se ubiquen en la capa más externa, es decir, en Infraestructura.
+**Orden jerárquico (de exterior a interior):**
 
-## Puertos y Adaptadores
+> Infraestructura → Aplicación → Dominio
 
-- Los puertos son las interfaces definidas en la capa de dominio para desacoplarnos de nuestra infraestructura. Por ejemplo, `UserRepository`.
-- Los adaptadores son las implementaciones posibles de esos puertos. Estas implementaciones traducirán esos contratos definidos en la interfaz a la lógica necesaria de ejecutar en base a un determinado proveedor. Por ejemplo, `MySQLUserRepository`.
+🔒 Este principio permite modificar las capas externas sin afectar las internas.
+Por ello, los elementos **más variables o dependientes de terceros** se ubican en la **capa de Infraestructura**.
+
+---
+
+## 🔌 Puertos y Adaptadores
+
+* **Puertos (Ports):**
+  Son las **interfaces** definidas en la capa de dominio para desacoplar la lógica de negocio de la infraestructura.
+  📍 *Ejemplo:* `UserRepository`
+
+* **Adaptadores (Adapters):**
+  Son las **implementaciones concretas** de los puertos, las cuales traducen los contratos definidos en el dominio hacia la lógica específica de un proveedor o tecnología.
+  📍 *Ejemplo:* `MySQLUserRepository`
+
+---
+
+🧠 En resumen, la arquitectura hexagonal junto al enfoque de vertical slicing permite desarrollar sistemas **modulares, escalables y fácilmente mantenibles**, donde la lógica de negocio permanece protegida de los detalles técnicos externos.
