@@ -61,3 +61,29 @@ La validación en los Value Objects y la validación a nivel de controlador **no
 * Una protege la **consistencia del dominio**.
 * La otra mejora la **interacción del usuario** con el sistema.
 
+## Inyección de Servicios de Dominio en los Casos de Uso
+
+Durante el desarrollo, hemos defendido la práctica de **instanciar los servicios de dominio directamente dentro de los casos de uso**. Sin embargo, existen diferentes enfoques para abordar este tema, cada uno con sus propias **ventajas y desventajas**.
+
+¿Qué ocurre si un **servicio de dominio**, instanciado en múltiples casos de uso, **comienza a requerir más dependencias**?
+
+* ¿Deberíamos modificar **cada caso de uso** donde fue instanciado?
+* ¿No sería más práctico **inyectarlo mediante el constructor**?
+
+Efectivamente, una opción más flexible consiste en **inyectar el servicio de dominio a través del constructor** del caso de uso.
+De esta manera:
+
+* El **contenedor de dependencias** o un **factory method** se convierte en el **único punto de modificación**, en caso de que el servicio de dominio necesite más dependencias en el futuro.
+
+**⚠️ Aspectos Clave a Tener en Cuenta**
+
+1️⃣ **Señal de alerta al agregar dependencias:**
+Si un servicio de dominio empieza a requerir muchas dependencias, esto puede indicar que **está asumiendo demasiadas responsabilidades**, violando el **Principio de Responsabilidad Única (SRP)** dentro de los principios **SOLID**.
+
+2️⃣ **Evitar la inyección en los servicios de dominio:**
+Es preferible **no inyectar dependencias** directamente en los servicios de dominio, ya que estos deberían mantenerse **estables y poco propensos a cambios**.
+
+**🧪 Consideraciones para las Pruebas Unitarias**
+
+* No deberíamos **mockear los servicios de dominio**, dado que **contienen la lógica esencial del dominio**, precisamente la que deseamos validar en los tests unitarios.
+* Una alternativa viable es **instanciar el servicio de dominio del mismo modo que el caso de uso**, asegurando así una **verificación real y coherente** del comportamiento del sistema.
