@@ -117,12 +117,12 @@ La publicación puede realizarse de diversas maneras. A continuación se detalla
 
 ---
 
-### 🧭 Conclusión
+## 🧭 Conclusión
 
 En nuestra opinión, **la tercera opción es la más adecuada** entre las tres alternativas analizadas.
 Aunque presenta una posible desventaja, **consideramos que es perfectamente asumible** por los siguientes motivos:
 
-#### 🔍 Estrategias para mitigar el inconveniente de la opción 3️⃣
+### 🔍 Estrategias para mitigar el inconveniente de la opción 3️⃣
 
 1️⃣ **Tests unitarios**
 
@@ -137,3 +137,11 @@ Aunque presenta una posible desventaja, **consideramos que es perfectamente asum
 ---
 
 De este modo, incluso si se olvida publicar los eventos, estas dos medidas permiten **prevenir errores y mantener la calidad del código**.
+
+## ¡Repasemos!
+
+1. **¿Desde donde registraremos los eventos de dominio?**
+  ✅ Desde la entidad y método donde se produzcan.
+
+2. **¿Desde donde publicaremos los eventos de dominio?**
+  ✅ Desde el caso de uso o ApplicationService ya que es éste quien representa la barrera a nivel de transacciones y publicación de eventos.
