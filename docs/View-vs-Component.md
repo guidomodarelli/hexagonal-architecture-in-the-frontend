@@ -1,7 +1,28 @@
 # ¿Diferencia entre View y Component?
 
-- View (Page): orquesta la pantalla. Compone componentes, resuelve dependencias (casos de uso, repos, navegación) y maneja side-effects externos. Sin reglas de dominio.
-- Component: pieza de UI reutilizable con lógica de presentación (estado, eventos, validaciones de UI). No implementa reglas de negocio; llama casos de uso vía props o hooks.
+## 🧱 Arquitectura de la Interfaz
+
+### 🖥️ **View (Page)**
+
+La **View** —también llamada *Page*— se encarga de **orquestar toda la pantalla**.
+Sus responsabilidades principales son:
+
+1️⃣ **Composición:** agrupa y organiza los distintos componentes visuales que conforman la página.
+2️⃣ **Gestión de dependencias:** resuelve y conecta los **casos de uso**, **repositorios**, **servicios de navegación** u otros recursos externos necesarios.
+3️⃣ **Manejo de efectos secundarios:** controla los **side-effects** externos (peticiones, listeners, suscripciones, etc.).
+4️⃣ **Sin reglas de dominio:** no contiene lógica de negocio; su función es puramente estructural y de coordinación.
+
+---
+
+### 🧩 **Component**
+
+El **Component** es una **pieza reutilizable de la UI** con su propia **lógica de presentación**.
+Sus funciones principales son:
+
+1️⃣ **Estado y eventos:** gestiona su estado interno, las interacciones del usuario y los eventos de interfaz.
+2️⃣ **Validaciones de UI:** controla aspectos visuales y validaciones relacionadas con la experiencia del usuario.
+3️⃣ **Sin lógica de negocio:** no implementa reglas de dominio; se comunica con los **casos de uso** mediante **props** o **hooks**, delegando la lógica compleja a otros niveles.
+
 
 Ejemplo mínimo (React) con dependencias mínimas
 
