@@ -112,3 +112,15 @@ Asumimos que todos los módulos de la aplicación tendrán acceso a este módulo
 Otro de los conceptos que compartiremos entre módulos serán los pequeños *Value Objects*, que modelan, por ejemplo, los identificadores de nuestras entidades.
 
 Esto se debe a que, por ejemplo, un video podría contener el identificador del usuario que lo ha publicado. Dado que la relación entre una entidad de un módulo y otra entidad de un módulo distinto se establece a través de este identificador —y no mediante una asociación directa—, con el fin de evitar el acoplamiento, resulta necesario compartir el *UserId* entre ambos módulos.
+
+## Repasemos
+
+1. **¿Cómo especifico el canal de Slack al que enviar notificaciones en mi adaptador para avisar de nuevos videos publicados?**
+   ✅ Mediante inyección de parámetros en el **constructor de la clase**, ya que no forma parte de la interfaz.
+
+2. **¿Qué puedo hacer para evitar enviar correos reales al ejecutar mis tests?**
+   ✅ *Mockear* el componente de infraestructura o **inyectar una implementación *fake***.
+
+3. **¿Cuándo se produce el acoplamiento estructural?**
+   ✅ Cuando, aunque el código esté desacoplado de una implementación gracias a una **interfaz**, esa interfaz sigue reflejando la **semántica de la implementación**, obliga a usar los métodos en un orden concreto o, en definitiva, su diseño y uso están influidos por alguna implementación específica.
+
