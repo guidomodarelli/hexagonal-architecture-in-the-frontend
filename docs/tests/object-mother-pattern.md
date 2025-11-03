@@ -1,8 +1,32 @@
 # Mejora los tests con Object Mother Pattern
 
-El patrón **Object Mother** facilita y agiliza la creación de datos falsos en nuestras pruebas. En lugar de instanciar manualmente cada objeto o definir valores fijos dentro de los tests, utilizamos funciones que generan datos dinámicos. Para ello podemos apoyarnos en librerías como **Faker**, que se encarga de producir valores aleatorios, o **Fishery**, que nos permite construir funciones de tipo *Factory*.
+## 🧩 Patrón **Object Mother**
 
-Además de aportar rapidez en la preparación de los datos, la aleatoriedad en su generación añade **robustez y fiabilidad**, evitando que siempre probemos con los mismos valores. Otro beneficio importante es la **legibilidad**: al trabajar con objetos que encapsulan conjuntos de datos, el código de los tests resulta más claro, conciso y fácil de mantener.
+El patrón **Object Mother** es una técnica que **simplifica y acelera** la creación de datos falsos en pruebas automatizadas, evitando la necesidad de instanciar manualmente objetos o definir valores fijos en cada test.
+
+---
+
+### ⚙️ Funcionamiento
+
+En lugar de escribir los datos directamente dentro de los tests, se utilizan **funciones generadoras** que producen información dinámica y variada.
+Para ello, se pueden emplear librerías como:
+
+* **Faker** 🃏: genera valores aleatorios (nombres, direcciones, fechas, etc.).
+* **Fishery** 🐟: permite construir funciones de tipo *Factory* para crear objetos de prueba de manera estructurada.
+
+---
+
+### 🚀 Beneficios principales
+
+1️⃣ **Rapidez y eficiencia**
+Facilita la preparación de datos de prueba, reduciendo el tiempo necesario para configurarlos.
+
+2️⃣ **Robustez y fiabilidad**
+La aleatoriedad en los datos evita probar siempre con los mismos valores, ayudando a descubrir errores ocultos.
+
+3️⃣ **Legibilidad y mantenimiento**
+Al encapsular los conjuntos de datos en objetos bien definidos, el código de los tests se vuelve más claro, conciso y fácil de mantener.
+
 
 ```typescript
 import { Course } from '../domain/Course';
