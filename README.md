@@ -1,62 +1,77 @@
-# Arquitectura Hexagonal en el Frontend
+# 🏛️ Arquitectura Hexagonal en el Frontend: Una Guía Detallada
 
-Este proyecto demuestra cómo implementar la arquitectura hexagonal (también conocida como arquitectura de puertos y adaptadores) en aplicaciones frontend. Esta arquitectura promueve la separación de responsabilidades y mejora la mantenibilidad y escalabilidad del código.
+Este documento explora la implementación de la **Arquitectura Hexagonal** (también conocida como Arquitectura de Puertos y Adaptadores) en aplicaciones frontend, destacando su rol en la separación de responsabilidades, la mejora de la mantenibilidad y la escalabilidad del código.
 
-## ¿Existe lógica de negocio en el frontend?
+-----
 
-Efectivamente, las aplicaciones frontend contienen lógica de negocio responsable de procesar datos, validar entradas y coordinar la interacción entre componentes de la interfaz. El objetivo es organizar esta lógica manteniéndola separada de la presentación e infraestructura, lo cual se logra mediante la arquitectura hexagonal.
+### 🧠 Lógica de Negocio en el Frontend
 
-La lógica de negocio define y controla las reglas y procesos que rigen la operación de una aplicación, independientemente del framework utilizado. Incluye validaciones, cálculos y orquestación de llamadas a servicios externos, y debe ser fácilmente testeable y mantenible.
+Sí, las aplicaciones frontend **contienen lógica de negocio significativa**. Esta lógica procesa datos, valida entradas del usuario, aplica reglas específicas del dominio y coordina la interacción entre componentes de la interfaz. 
 
-Por ejemplo, al crear una nueva issue en GitHub, el frontend valida que no se pueda crear sin título, aunque esta validación también ocurra en el backend. Esta lógica reside en el frontend.
+**El objetivo clave es mantener esta lógica organizada, testeable y separada de los detalles de presentación (framework UI) e infraestructura (APIs, almacenamiento)**, lo cual se logra mediante la Arquitectura Hexagonal.
 
-También consideramos la estructura de datos específica para cada contexto. Los datos de usuario necesarios en la página principal difieren de los requeridos en el desplegable de asignación de issues, requiriendo modelos distintos aunque compartan algunos campos.
+  * **Propósito:** Definir y controlar las reglas y procesos de la aplicación, independientemente del *framework*. Incluye validaciones, cálculos y la orquestación de llamadas a servicios externos.
+  * **Ejemplo de Validación:** Al crear un nuevo *issue* en GitHub, el frontend valida que no se pueda crear sin título (aunque esta validación también ocurra en el backend).
+  * **Estructura de Datos:** La lógica de negocio también guía la estructura de datos específica para cada contexto.
+      * **Anti-patrón:** Usar una única interfaz genérica con campos opcionales (`?`), lo que añade condicionales innecesarios y complica el mantenimiento.
 
-Podríamos crear una interfaz TypeScript con campos opcionales:
+        ```typescript
+        interface User {
+          id: string;
+          username: string;
+          avatarUrl: string;
+          name?: string; // Opcional
+          status?: 'active' | 'inactive'; // Opcional
+        }
+        ```
 
-```typescript
-interface User {
-  id: string;
-  username: string;
-  avatarUrl: string;
-  name?: string; // Opcional
-  status?: 'active' | 'inactive'; // Opcional
-}
-```
+      * **Recomendación:** Crear interfaces específicas para cada caso de uso. Por ejemplo, la interfaz `User` puede ser distinta a la interfaz `Assignee`, aunque compartan campos base, ya que `Assignee` requiere campos específicos para su contexto (e.g., el desplegable de asignación).
 
-Sin embargo, esto añadiría condicionales innecesarios y complicaría el mantenimiento. Preferimos interfaces específicas para cada caso de uso:
+        ```typescript
+        interface User {
+          id: string;
+          username: string;
+          avatarUrl: string;
+        }
 
-```typescript
-interface User {
-  id: string;
-  username: string;
-  avatarUrl: string;
-}
+        interface Assignee {
+          id: string;
+          username: string;
+          avatarUrl: string;
+          name: string; // Campo requerido para el desplegable
+          status: 'active' | 'inactive'; // Campo requerido para el desplegable
+        }
+        ```
 
-interface Assignee {
-  id: string;
-  username: string;
-  avatarUrl: string;
-  name: string; // Campo requerido para el desplegable
-  status: 'active' | 'inactive'; // Campo requerido para el desplegable
-}
-```
+Estas decisiones de diseño confirman la existencia de lógica de negocio en el frontend y subrayan la importancia de mantenerla bien organizada y explícita.
 
-Estas decisiones de diseño confirman la existencia de lógica de negocio en el frontend y la importancia de mantenerla bien organizada.
+Ambas interfaces comparten campos base (`id`, `username`, `avatarUrl`), pero `Assignee` declara como **obligatorios** los campos `name` y `status`, que son necesarios para su contexto específico (por ejemplo, mostrar información completa en un desplegable de asignación). Esta separación tiene múltiples beneficios:
 
-Ambas interfaces comparten campos base, pero `Assignee` incluye campos adicionales necesarios para el contexto específico del desplegable de asignación. Esta separación permite que cada parte de la aplicación utilice la estructura de datos más apropiada, mejorando la claridad y mantenibilidad del código.
+* **Claridad semántica:** cada interfaz expresa exactamente qué campos son necesarios en su contexto, eliminando ambigüedades y condicionales innecesarios (`if (user.name)`).
+* **Seguridad de tipos:** el compilador de TypeScript valida que los campos obligatorios estén presentes, previniendo errores en tiempo de ejecución.
+* **Mantenibilidad:** al cambiar los requisitos de un contexto (e.g., agregar un campo a `Assignee`), solo afectamos el código que realmente lo utiliza, sin propagar cambios a todos los usos de `User`.
+* **Documentación implícita:** la estructura de datos sirve como documentación viva de las reglas del dominio para ese caso de uso.
 
-## Frameworks + Arquitectura Hexagonal
+En resumen, preferir interfaces específicas por contexto sobre interfaces genéricas con campos opcionales mejora la expresividad del código, reduce errores y facilita la evolución del sistema.
 
-La arquitectura hexagonal es agnóstica al framework utilizado. Puede implementarse con React, Vue, Angular o cualquier otro framework frontend. La clave está en seguir los principios de separación de responsabilidades y mantener la lógica de negocio aislada de la infraestructura y presentación.
+-----
 
-```
---> View (Page): orquestación y navegación de la UI
---> Component: piezas de UI reutilizables y lógica de presentación
---> Application: Casos de uso y lógica de negocio
---> Domain: Entidades y reglas de negocio
---> Infrastructure: Adaptadores para APIs, almacenamiento, etc.
-```
+### 🛠️ *Frameworks* y Arquitectura Hexagonal
+
+La Arquitectura Hexagonal es **agnóstica** al *framework*. Puede implementarse con React, Vue, Angular o cualquier otro. La clave está en seguir los principios de separación de responsabilidades y aislar la lógica de negocio de la presentación y la infraestructura.
+
+#### 🗺️ Capas y Responsabilidades
+
+El patrón divide la aplicación en las siguientes capas, con una dirección de dependencia definida ($\rightarrow$):
+
+| Capa | Responsabilidad Principal |
+| :--- | :--- |
+| **View (Page) + Components** | Orquestación de la UI, navegación y lógica de presentación (React, Vue, etc.). |
+| **Application (Casos de Uso)** | Casos de uso y lógica de negocio pura. |
+| **Domain** | Entidades, reglas de negocio, validaciones y contratos (*interfaces* de repositorio). |
+| **Infrastructure** | Adaptadores para APIs, almacenamiento (REST, GraphQL, *localStorage*) e implementaciones de los repositorios. |
+
+> La dirección de dependencias es: **Presentation** $\rightarrow$ **Application** $\rightarrow$ **Domain**. La capa **Infrastructure** implementa adaptadores que dependen del Dominio (no al revés).
 
 ```
 +---------------------+
@@ -83,6 +98,10 @@ La arquitectura hexagonal es agnóstica al framework utilizado. Puede implementa
 +---------------------+
 ```
 
+#### 📁 Estructura de Carpetas Sugerida
+
+Un ejemplo de estructura de módulos (e.g., `courses`):
+
 ```text
 src/
   App.tsx
@@ -96,42 +115,54 @@ src/
           UpdateCourse.ts
       domain/
         entities/
-          Course.ts
+          Course.ts (Modelos inmutables, estructuras centrales)
         repositories/
-          CourseRepository.ts
+          CourseRepository.ts (Contratos/interfaces de acceso a datos)
         value-objects/
-          CourseId.ts
-          CourseTitle.ts
-          CourseDuration.ts
+          CourseId.ts, CourseTitle.ts, CourseDuration.ts (Validaciones y reglas encapsuladas)
       infrastructure/
         rest/
           api/
             CourseApi.ts
           repositories/
-            CourseRepositoryImpl.ts
+            CoursePostgreSQLRepository.ts (Implementaciones concretas)
         graphql/
           api/
             CourseGraphQLApi.ts
           repositories/
-            CourseGraphQLRepositoryImpl.ts
+            CourseGraphQLRepository.ts
       presentation/
         components/
-          CourseList.tsx
-          CourseForm.tsx
+          CourseList.tsx, CourseForm.tsx
         pages/
-          CoursesPage.tsx
+          CoursesPage.tsx (Páginas / Views)
 ```
 
-### Resumen rápido (qué hace cada carpeta)
-- App.tsx: punto de entrada de la aplicación / composición de dependencias.
-- application/use-cases: casos de uso puros; funciones que orquestan la lógica usando interfaces (repositorios).
-- domain/entities: modelos inmutables y estructuras centrales (sin dependencias de infra).
-- domain/repositories: contratos (interfaces) que definen cómo acceder a datos.
-- domain/value-objects: validaciones y reglas encapsuladas (por ejemplo, CourseId, CourseTitle, CourseDuration).
-- infrastructure/*: implementaciones concretas de los repositorios y adaptadores de I/O (REST, GraphQL, etc.).
-- presentation/*: páginas (Views) y componentes (Components) del UI; deben usar casos de uso o servicios, no lógica de dominio.
+### 📂 Resumen rápido (qué hace cada carpeta)
 
-### Buenas prácticas sugeridas
+| Carpeta / Archivo | Responsabilidad |
+|:------------------|:----------------|
+| **App.tsx** | Punto de entrada de la aplicación; composición de dependencias (bootstrapping). |
+| **application/use-cases/** | Casos de uso puros; funciones que orquestan la lógica de negocio usando interfaces (repositorios). |
+| **domain/entities/** | Modelos inmutables y estructuras centrales del dominio (sin dependencias de infraestructura). |
+| **domain/repositories/** | Contratos (interfaces) que definen cómo acceder a datos; puertos de la arquitectura. |
+| **domain/value-objects/** | Validaciones y reglas encapsuladas en tipos semánticos (ej: `CourseId`, `CourseTitle`, `CourseDuration`). |
+| **infrastructure/** | Implementaciones concretas de repositorios y adaptadores de I/O (REST, GraphQL, localStorage, etc.); adaptadores de la arquitectura. |
+| **presentation/pages/ (Views)** | Punto de entrada a nivel de ruta/pantalla, orquesta la UI, compone componentes, maneja navegación y conecta casos de uso, sin lógica de dominio. |
+| **presentation/components/** | Piezas de UI reutilizables con estado/efectos de presentación y validaciones de UI. Pueden invocar casos de uso a través de *props* o *hooks*; no contienen lógica de dominio. |
+
+> **Regla clave:** La capa de presentación (pages/components) **usa** casos de uso; la aplicación **depende** de interfaces del dominio; la infraestructura **implementa** esas interfaces. El dominio nunca importa de infraestructura o presentación.
+
+### View vs Component (en React)
+
+```text
+View (Page) --> Component --> Use Case --> Repository <--- Impl Repository
+```
+
+> La separación entre **View (Page)** y **Component** mejora la reusabilidad, testeabilidad y claridad de responsabilidades:
+
+#### ✨ Buenas Prácticas Clave
+
 - Inyectar repositorios en los casos de uso (evitar acoplar a implementaciones).
 - Mantener validaciones en value-objects / domain.
 - Los adaptadores (infrastructure) traducen DTOs ↔ domain entities.
@@ -151,52 +182,57 @@ Podríamos considerarla infraestructura, ya que el framework es una dependencia 
 
 Además, las particularidades de los frameworks frecuentemente limitan la estructura de la aplicación, por ejemplo, requiriendo un archivo `main.ts` dentro de la carpeta `src`. Esto sugiere que la capa de presentación trasciende la simple infraestructura.
 
-### View vs Component (en React)
+-----
 
-```text
-View (Page) --> Component --> Use Case --> Repository <--- Impl Repository
-```
+### 📝 Casos de Uso y Patrón Repositorio
 
-- View (Page): entrada a nivel de ruta/pantalla; orquesta la UI, compone componentes, maneja navegación y conecta casos de uso. Debe evitar lógica de dominio.
-- Component: pieza de UI reutilizable con estado/efectos de presentación y validaciones de UI; no contiene reglas de negocio, pero puede invocar casos de uso a través de props o hooks.
-- Beneficio: separar View y Component mejora reusabilidad, testeo y claridad de responsabilidades dentro de la capa de presentación.
+Vamos a crear un caso de uso desde cero: la creación de un curso. Contamos con un componente React encargado de renderizar el formulario y manejar los errores de validación. Lo que nos interesa ahora es definir cómo gestionaremos la lógica de negocio y cómo guardaremos los datos del curso.
 
-## Tu primer caso de uso utilizando arquitectura hexagonal: Aplicación, dominio e infraestructura
+#### 🏗️ Creación de un Caso de Uso (Ejemplo: `CreateCourse`)
 
-Vamos a crear un caso de uso desde cero: la creación de un curso. Tenemos un componente React que se encargará de pintar el formulario, manejar errores de validación, etc. Lo que nos interesa ahora es cómo gestionar la lógica de negocio y cómo guardamos los datos del curso.
+1.  **Definir la Entidad del Dominio** (`Course.ts` dentro de `src/modules/courses/domain/entities`):
 
-### Definiendo la entidad del dominio
+    ```typescript
+    export interface Course {
+      id: string;
+      title: string;
+      description: string;
+      duration: number; // duración en segundos
+    }
+    ```
 
-Dentro de `src/modules/courses/domain/entities` creamos el archivo `Course.ts`:
+2.  **Definir la Request del Caso de Uso** (`CreateCourse.ts` dentro de `src/modules/courses/application/use-cases`):
 
-```typescript
-export interface Course {
-  id: string;
-  title: string;
-  description: string;
-  duration: number; // duración en segundos
-}
-```
+    ```typescript
+    import { Course } from '../../domain/entities/Course';
 
-Dentro de `src/modules/courses/application/use-cases` creamos el archivo `CreateCourse.ts`:
+    export interface CreateCourseRequest {
+      title: string;
+      description: string;
+      duration: number; // duración en segundos
+    }
 
-```typescript
-import { Course } from '../../domain/entities/Course';
+    export type CreateCourseResponse = void;
 
-export interface CreateCourseRequest {
-  title: string;
-  description: string;
-  duration: number; // duración en segundos
-}
+    export function CreateCourse(request: CreateCourseRequest): Promise<CreateCourseResponse> {
+      // Implementación del caso de uso
+    }
+    ```
 
-export type CreateCourseResponse = void;
+    * Se usa un `CreateCourseRequest` separado de la entidad `Course` para asegurar que el cliente solo proporcione los campos necesarios para la creación (e.g., excluyendo el `id`, que es generado por el sistema).
+    * `CreateCourseResponse` es `void` en este ejemplo, pero podría devolver el `id` o el objeto `Course` si fuera necesario.
 
-export function CreateCourse(request: CreateCourseRequest): Promise<CreateCourseResponse> {
-  // Implementación del caso de uso
-}
-```
+3.  **Inyectar Dependencias** (enfoque funcional): Los casos de uso son funciones puras que reciben sus dependencias (e.g., el `CourseRepository`) como parámetros.
 
-¿Cómo guardamos el curso, si desde la capa de aplicación no sabemos nada de infraestructura?
+**¿Cómo guardamos el curso, si desde la capa de aplicación no sabemos nada de infraestructura?**
+
+#### 🛡️ Value Objects y Validaciones
+
+Las validaciones deben residir en la capa de **Domain** (preferiblemente en *value-objects* o funciones de validación).
+
+  * **Value Objects Funcionales:** En el frontend, se pueden implementar como **funciones puras** y **tipos alias** en archivos separados (*ValueFile*), sin necesidad de clases, encapsulando el tipo, las reglas de validación y las funciones auxiliares.
+      * Esto permite reutilizar las funciones de validación en la lógica de UI para proporcionar *feedback* inmediato al usuario.
+  * **Función de Validación Central:** Se puede definir una función como `ensureCourseIsValid(course)` que agrupa las validaciones individuales del dominio y lanza errores si no se cumplen.
 
 #### FAQs
 
@@ -231,9 +267,11 @@ export function CreateCourse(
 **¿Por qué se usan casos de uso en lugar de servicios?**
 Los casos de uso representan acciones específicas que un usuario puede realizar en el sistema, encapsulando la lógica de negocio asociada a esas acciones. Esto proporciona una estructura clara y enfocada para la lógica de negocio, facilitando su comprensión y mantenimiento. Los servicios, por otro lado, pueden volverse genéricos y abarcar múltiples responsabilidades, lo que puede complicar la gestión del código. Al utilizar casos de uso, promovemos una arquitectura más modular y orientada a las acciones del usuario. Mientras que los servicios pueden ser útiles para agrupar funcionalidades relacionadas, los casos de uso ofrecen una manera más directa de representar las operaciones del sistema desde la perspectiva del usuario.
 
-### Patrón Repositorio
+#### 🔄 Patrón Repositorio (Puerto)
 
-Para resolver este problema, utilizamos el patrón repositorio. Este patrón define una interfaz para acceder a los datos sin exponer los detalles de la implementación.
+Para resolver este problema, utilizamos el patrón repositorio. 
+
+El Patrón Repositorio define una interfaz (`CourseRepository`) en la capa de **Domain** (puerto) para acceder a los datos, sin exponer los detalles de su implementación.
 
 Dentro de `src/modules/courses/domain/repositories` creamos el archivo `CourseRepository.ts`:
 
