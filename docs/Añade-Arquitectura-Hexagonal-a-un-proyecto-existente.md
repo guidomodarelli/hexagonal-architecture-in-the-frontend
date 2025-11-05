@@ -2,61 +2,81 @@
 
 ### Plan de refactor: de main.js a arquitectura hexagonal
 
-Objetivo: extraer la lógica, introducir TypeScript y aplicar separación de capas manteniendo la aplicación funcional mediante tests de aceptación.
+**Objetivo:** Extraer la lógica de negocio, introducir TypeScript y aplicar separación de capas manteniendo la aplicación funcional mediante tests de aceptación.
 
-1. Añadir tests de aceptación (E2E)
-  - Implementar pruebas que cubran los flujos críticos (crear curso, listar, borrar) con Playwright o Cypress.
-  - Asegurar un entorno determinista (seed de localStorage, mocks de red).
-  - Usar estos tests como guardia durante el refactor: la app debe seguir pasando las E2E en cada cambio.
+---
 
-2. Identificar seams y responsabilidades en main.js
-  - Mapear responsabilidades: UI, orquestación, casos de uso, validaciones, persistencia.
-  - Definir puntos de extracción (funciones/objetos que pueden recibir dependencias).
+#### 1. Añadir tests de aceptación (E2E)
 
-3. Migración incremental a TypeScript
-  - Activar allowJs en tsconfig y renombrar gradualmente archivos a .ts/.tsx.
-  - Migrar primero tipos esenciales (Course, DTOs, interfaces de repositorio) para ganar seguridad de tipo sin bloquear el desarrollo.
+- Implementar pruebas que cubran los flujos críticos (crear curso, listar, borrar) con **Playwright** o **Cypress**.
+- Asegurar un entorno determinista (seed de localStorage, mocks de red).
+- Usar estos tests como **guardia durante el refactor**: la aplicación debe seguir pasando las E2E en cada cambio.
 
-4. Definir interfaz de repositorio (infraestructura)
-  - Extraer las interacciones con localStorage a una interfaz en domain/application:
-    ```typescript
-    export interface CourseRepository {
-     save(course: Course): Promise<void>;
-     findAll(): Promise<Course[]>;
-     findById(id: string): Promise<Course | null>;
-     delete(id: string): Promise<void>;
-    }
-    ```
-  - Proveer una implementación concreta (LocalStorageCourseRepository) en infrastructure/.
+#### 2. Identificar seams y responsabilidades en main.js
 
-5. Implementar casos de uso en la capa de aplicación
-  - Crear funciones puras que reciban la interfaz del repositorio (inyección de dependencias):
-    ```typescript
-    export function CreateCourse(repo: CourseRepository) {
-     return async (req: CreateCourseRequest): Promise<void> => { /* ... */ };
-    }
-    ```
-  - Mantener la orquestación y la lógica de negocio en use-cases; UI sólo invoca estos use-cases.
+- Mapear responsabilidades: UI, orquestación, casos de uso, validaciones, persistencia.
+- Definir puntos de extracción (funciones/objetos que pueden recibir dependencias).
 
-6. Mover reglas de negocio al dominio
-  - Crear value-objects y validadores (CourseTitle, CourseDuration, CourseId, ensureCourseIsValid).
-  - Lanzar errores de dominio desde el dominio; los use-cases los capturan y transforman si es necesario.
+#### 3. Migración incremental a TypeScript
 
-7. Modularizar main.ts (composición y bootstrap)
-  - main.ts debe encargarse solo de composición: crear repositorios, construir use-cases y conectar handlers de UI.
-  - Evitar lógica de negocio y acceso directo a localStorage en main.ts.
+- Activar `allowJs` en `tsconfig.json` y renombrar gradualmente archivos a `.ts`/`.tsx`.
+- Migrar primero tipos esenciales (`Course`, DTOs, interfaces de repositorio) para ganar seguridad de tipo sin bloquear el desarrollo.
 
-8. Escribir tests unitarios una vez aislada la lógica
-  - Tests unitarios para domain y application (use-cases) usando repositorios mock.
-  - Tests de integración para adaptadores (LocalStorageCourseRepository).
+#### 4. Definir interfaz de repositorio (infraestructura)
 
-Checklist rápido
-- [ ] E2E cubriendo flujos críticos en el código legacy.
-- [ ] Interfaz CourseRepository y adaptación a localStorage.
-- [ ] Use-cases puros con inyección de dependencias.
-- [ ] Domain: value-objects y validadores.
-- [ ] main.ts reducido a composición/entorno.
-- [ ] Migración completa a TypeScript y suite de tests unitarios funcionando.
+Extraer las interacciones con localStorage a una interfaz en `domain`/`application`:
 
-Resultado esperado: código desacoplado, testable y preparado para futuros cambios de infraestructura o framework sin tocar la lógica de negocio.
+```typescript
+export interface CourseRepository {
+  save(course: Course): Promise<void>;
+  findAll(): Promise<Course[]>;
+  findById(id: string): Promise<Course | null>;
+  delete(id: string): Promise<void>;
+}
+```
 
+Proveer una implementación concreta (`LocalStorageCourseRepository`) en `infrastructure/`.
+
+#### 5. Implementar casos de uso en la capa de aplicación
+
+Crear funciones puras que reciban la interfaz del repositorio (inyección de dependencias):
+
+```typescript
+export function CreateCourse(repo: CourseRepository) {
+  return async (req: CreateCourseRequest): Promise<void> => {
+    // Lógica del caso de uso
+  };
+}
+```
+
+Mantener la orquestación y la lógica de negocio en `use-cases`; la UI sólo invoca estos use-cases.
+
+#### 6. Mover reglas de negocio al dominio
+
+- Crear **value-objects** y validadores (`CourseTitle`, `CourseDuration`, `CourseId`, `ensureCourseIsValid`).
+- Lanzar errores de dominio desde el dominio; los use-cases los capturan y transforman si es necesario.
+
+#### 7. Modularizar main.ts (composición y bootstrap)
+
+- `main.ts` debe encargarse **solo de composición**: crear repositorios, construir use-cases y conectar handlers de UI.
+- Evitar lógica de negocio y acceso directo a localStorage en `main.ts`.
+
+#### 8. Escribir tests unitarios una vez aislada la lógica
+
+- Tests unitarios para `domain` y `application` (use-cases) usando repositorios mock.
+- Tests de integración para adaptadores (`LocalStorageCourseRepository`).
+
+---
+
+### Checklist rápido
+
+- [ ] E2E cubriendo flujos críticos en el código legacy
+- [ ] Interfaz `CourseRepository` y adaptación a localStorage
+- [ ] Use-cases puros con inyección de dependencias
+- [ ] Domain: value-objects y validadores
+- [ ] `main.ts` reducido a composición/entorno
+- [ ] Migración completa a TypeScript y suite de tests unitarios funcionando
+
+---
+
+**Resultado esperado:** Código desacoplado, testable y preparado para futuros cambios de infraestructura o framework sin tocar la lógica de negocio.
