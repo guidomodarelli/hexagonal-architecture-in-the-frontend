@@ -43,25 +43,25 @@ Este enfoque aprovecha la **naturaleza funcional de JavaScript** para simplifica
 - ✅ **Repositorios**: funciones tipadas, inyectables sin boilerplate
 - ✅ **Casos de uso**: orquestan funciones en lugar de depender de objetos instanciados
 
-## ¿Tienen sentido los ValueObjects?
+## ¿Tienen sentido los Value Objects?
 
-En programación orientada a objetos, un **ValueObject** encapsula un valor y concentra la lógica asociada a él. Así evitamos que esa lógica termine dispersa en la entidad principal. Por ejemplo, en lugar de que la clase `Course` tenga propiedades primitivas como `string` o `number`, cada propiedad se representa mediante su propio ValueObject: `CourseTitle`, `ImageUrl`, `CourseId`, etc.
+En programación orientada a objetos, un **Value Object** encapsula un valor y concentra su lógica asociada, evitando que esta se disperse en la entidad principal. Por ejemplo, en lugar de que `Course` tenga propiedades primitivas (`string`, `number`), cada una se representa mediante su propio Value Object: `CourseTitle`, `ImageUrl`, `CourseId`, etc.
 
-La ventaja es que, si necesitamos agregar validaciones (ejemplo: longitud mínima o máxima del título), no lo haríamos en la clase `Course`, sino en el ValueObject correspondiente.
+**Ventaja clave:** las validaciones (longitud, formato, rangos) viven en el Value Object correspondiente, no en la entidad.
 
 ---
 
-### ¿Y en el frontend?
+### Aplicación en frontend: Value Files
 
-En el frontend podemos aplicar el mismo patrón, pero de forma más ligera y funcional. En lugar de definir clases, podemos encapsular cada valor en un archivo independiente —lo que podríamos llamar un **ValueFile**— que exporta:
+En frontend podemos adoptar el mismo patrón de forma **funcional y ligera**. En lugar de clases, usamos **archivos independientes** (Value Files) que exportan:
 
-1. **El tipo semántico** (alias sobre un primitivo).
-2. **Las reglas de validación**.
-3. **Las funciones auxiliares** (errores, normalizaciones, etc.).
+1. **Tipo semántico** (alias sobre primitivos)
+2. **Reglas de validación**
+3. **Funciones auxiliares** (errores, normalizaciones)
 
-Ejemplo en **TypeScript** (`CourseTitle.ts`):
+**Ejemplo** (`CourseTitle.ts`):
 
-```ts
+```typescript
 // Tipo semántico
 export type CourseTitle = string;
 
@@ -69,7 +69,7 @@ export type CourseTitle = string;
 export const COURSE_TITLE_MIN_LENGTH = 5;
 export const COURSE_TITLE_MAX_LENGTH = 100;
 
-// Validaciones
+// Validación
 export function isCourseTitleValid(title: string): boolean {
   return (
     title.length >= COURSE_TITLE_MIN_LENGTH &&
@@ -83,9 +83,9 @@ export function CourseTitleNotValidError(title: string): Error {
 }
 ```
 
-De esta forma, en la interfaz `Course` ya no trabajamos con `string`, sino con `CourseTitle`:
+La interfaz `Course` usa tipos semánticos en lugar de primitivos:
 
-```ts
+```typescript
 export interface Course {
   id: CourseId;
   title: CourseTitle;
@@ -95,13 +95,14 @@ export interface Course {
 
 ---
 
-### Beneficios de este enfoque
+### Beneficios
 
-* **Semántica fuerte:** el código expresa mejor el dominio (`CourseTitle` vs `string`).
-* **Consistencia:** las reglas viven junto al valor que afectan.
-* **Evolutivo:** si al principio un valor no tiene lógica extra, basta con un alias de tipo. Si más adelante necesita validaciones, lo ampliamos en el mismo archivo, sin ensuciar la entidad principal.
-* **Funcional:** no dependemos de clases ni instancias, pero seguimos respetando la filosofía de los ValueObjects.
+- **Semántica rica:** `CourseTitle` expresa mejor el dominio que `string`
+- **Consistencia:** las reglas viven junto al valor que gobiernan
+- **Evolutivo:** empieza con un alias simple, añade validaciones cuando sea necesario
+- **Testeable:** funciones puras, fáciles de probar en aislamiento
+- **Sin overhead:** no requiere instancias ni constructores
 
 ---
 
-👉 En resumen: **sí tiene sentido aplicar ValueObjects en el frontend**, pero con un enfoque práctico: tipos alias + funciones puras en archivos separados. Es más liviano que en backend, pero mantiene la semántica y disciplina del dominio.
+**Conclusión:** Los Value Objects tienen pleno sentido en frontend mediante un enfoque pragmático: **tipos alias + funciones puras** en archivos separados. Mantiene la semántica y disciplina del dominio sin la complejidad de clases.
