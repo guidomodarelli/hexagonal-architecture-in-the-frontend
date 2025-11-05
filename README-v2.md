@@ -104,7 +104,7 @@ Un ejemplo de estructura de módulos (e.g., `courses`):
 
 ```text
 src/
-  App.tsx
+  App.tsx ó main.ts (Punto de entrada, composición de dependencias)
   modules/
     courses/
       application/

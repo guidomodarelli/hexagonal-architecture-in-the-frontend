@@ -6,7 +6,7 @@ Este documento explora la implementación de la **Arquitectura Hexagonal** (tamb
 
 ### 🧠 Lógica de Negocio en el Frontend
 
-Sí, las aplicaciones frontend **contienen lógica de negocio significativa**. Esta lógica procesa datos, valida entradas del usuario, aplica reglas específicas del dominio y coordina la interacción entre componentes de la interfaz. 
+Sí, las aplicaciones frontend **contienen lógica de negocio significativa**. Esta lógica procesa datos, valida entradas del usuario, aplica reglas específicas del dominio y coordina la interacción entre componentes de la interfaz.
 
 **El objetivo clave es mantener esta lógica organizada, testeable y separada de los detalles de presentación (framework UI) e infraestructura (APIs, almacenamiento)**, lo cual se logra mediante la Arquitectura Hexagonal.
 
@@ -104,7 +104,7 @@ Un ejemplo de estructura de módulos (e.g., `courses`):
 
 ```text
 src/
-  App.tsx
+  App.tsx ó main.ts (Punto de entrada, composición de dependencias)
   modules/
     courses/
       application/
@@ -142,7 +142,7 @@ src/
 
 | Carpeta / Archivo | Responsabilidad |
 |:------------------|:----------------|
-| **App.tsx** | Punto de entrada de la aplicación; composición de dependencias (bootstrapping). |
+| **App.tsx ó main.ts** | Punto de entrada de la aplicación; composición de dependencias (bootstrapping). |
 | **application/use-cases/** | Casos de uso puros; funciones que orquestan la lógica de negocio usando interfaces (repositorios). |
 | **domain/entities/** | Modelos inmutables y estructuras centrales del dominio (sin dependencias de infraestructura). |
 | **domain/repositories/** | Contratos (interfaces) que definen cómo acceder a datos; puertos de la arquitectura. |
@@ -281,7 +281,7 @@ Los casos de uso representan acciones específicas que un usuario puede realizar
 
 #### 🔄 Patrón Repositorio (Puerto)
 
-Para resolver este problema, utilizamos el patrón repositorio. 
+Para resolver este problema, utilizamos el patrón repositorio.
 
 El Patrón Repositorio define una interfaz (`CourseRepository`) en la capa de **Domain** (puerto) para acceder a los datos, sin exponer los detalles de su implementación.
 
