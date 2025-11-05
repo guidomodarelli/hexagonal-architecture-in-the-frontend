@@ -163,24 +163,36 @@ View (Page) --> Component --> Use Case --> Repository <--- Impl Repository
 
 #### ✨ Buenas Prácticas Clave
 
-- Inyectar repositorios en los casos de uso (evitar acoplar a implementaciones).
-- Mantener validaciones en value-objects / domain.
-- Los adaptadores (infrastructure) traducen DTOs ↔ domain entities.
-- La capa presentation solo orquesta interacción y muestra errores/validaciones ya provistas por domain/application.
-- Evitar lógica de negocio en componentes UI; usar casos de uso para operaciones complejas.
-- Usar hooks personalizados para encapsular lógica de presentación reutilizable.
-- Dirección de dependencias: presentation → application → domain; infrastructure implementa adaptadores que dependen del dominio (no al revés).
-- Escribir tests unitarios para casos de uso y lógica de dominio, y tests de integración para adaptadores e interacción UI.
+* **Inyección de dependencias:** Pasar repositorios (interfaces) a los casos de uso para evitar el acoplamiento a implementaciones concretas. Esto facilita el testing y el cambio de adaptadores.
+* **Validaciones en Domain:** Mantener las validaciones en la capa de **Domain** (e.g., *value-objects*), permitiendo su reutilización tanto en casos de uso como en la UI para feedback inmediato.
+* **Traducción en Infrastructure:** Los adaptadores de **Infrastructure** deben traducir DTOs externos a entidades de dominio y viceversa, aislando el dominio de cambios en APIs externas.
+* **Presentation como orquestadora:** La capa de **Presentation** solo orquesta la interacción del usuario y muestra errores/validaciones provistas por Domain/Application, sin contener lógica de negocio.
+* **Casos de uso para operaciones complejas:** Evitar lógica de negocio compleja en componentes de UI; delegar operaciones complejas a casos de uso bien definidos.
+* **Hooks personalizados:** Usar hooks personalizados (en React) para encapsular lógica de presentación reutilizable (estado de formularios, manejo de errores de UI, efectos visuales), manteniendo los componentes limpios.
+* **Dirección de dependencias:** `presentation → application → domain`; `infrastructure` implementa adaptadores que dependen del dominio (no al revés). El dominio nunca importa de capas superiores.
+* **Testing por capas:** Escribir tests unitarios para casos de uso y lógica de dominio (usando mocks de repositorios), tests de integración para adaptadores (verificando traducción de DTOs) y tests E2E para la interacción UI completa.
 
-La arquitectura hexagonal busca separar la lógica de negocio de la lógica de interfaz de usuario (mostrar/ocultar elementos, manejo de inputs, etc.).
+##### 🎯 Sobre la Capa de Presentación
 
-Así, si decidimos cambiar de framework en el futuro, la lógica de negocio permanecerá intacta y solo será necesario reescribir la capa de presentación.
+La arquitectura hexagonal busca separar la **lógica de negocio** de la **lógica de presentación** (mostrar/ocultar elementos, manejo de inputs, animaciones, routing).
 
-Al organizar la aplicación en capas, surge la pregunta sobre dónde ubicar la lógica de interfaz de usuario que maneja el framework: ¿es dominio, aplicación o infraestructura?
+Si decidimos cambiar de framework en el futuro, la lógica de negocio permanecerá intacta y solo será necesario reescribir la capa de presentación.
 
-Podríamos considerarla infraestructura, ya que el framework es una dependencia externa. Sin embargo, esta capa a menudo sirve como punto de entrada en los tests unitarios, tradicionalmente asociada con la capa de aplicación.
+**¿Dónde ubicar la lógica del framework?**
 
-Además, las particularidades de los frameworks frecuentemente limitan la estructura de la aplicación, por ejemplo, requiriendo un archivo `main.ts` dentro de la carpeta `src`. Esto sugiere que la capa de presentación trasciende la simple infraestructura.
+Podríamos considerarla infraestructura, ya que el framework es una dependencia externa. Sin embargo, esta capa:
+
+* Sirve como **punto de entrada** en aplicaciones frontend (tradicionalmente asociado con la capa de aplicación).
+* Tiene **particularidades** que limitan la estructura (e.g., `main.ts` en `src/`, convenciones de routing).
+* Orquesta la **experiencia del usuario**, conectando casos de uso con la interfaz visible.
+
+Por ello, tratamos **Presentation** como una capa independiente con responsabilidades claras:
+
+* **Pages (Views):** Punto de entrada de rutas, orquesta componentes, maneja navegación y conecta casos de uso. Sin lógica de dominio.
+* **Components:** Piezas de UI reutilizables con estado/efectos de presentación. Invocan casos de uso a través de *props* o *hooks*; no contienen lógica de dominio.
+* **Hooks personalizados:** Encapsulan lógica de presentación reutilizable (gestión de formularios, estados de carga, efectos visuales).
+
+Esta separación garantiza que cambiar de React a Vue, Svelte o cualquier otro framework solo afecte la capa de presentación, preservando intacta toda la lógica de negocio en `application` y `domain`.
 
 -----
 
