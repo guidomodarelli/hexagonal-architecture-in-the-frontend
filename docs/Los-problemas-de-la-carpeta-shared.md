@@ -116,6 +116,43 @@ export function mapUserRowToAssignee(row: UserRow): Assignee {
 
 ---
 
+## Los 3 grandes problemas de usar mal `shared`
+
+### 1. Mantenibilidad
+
+Al centralizar todo en `shared`, se pierde la cohesión de los módulos específicos. Con el tiempo, `shared` crece descontroladamente:
+
+- Dificulta la navegación del código
+- Mezcla responsabilidades de diferentes contextos
+- Requiere reorganizaciones costosas para recuperar la cohesión
+
+### 2. Escalabilidad
+
+El uso excesivo de entidades genéricas genera **acoplamiento entre contextos**:
+
+**Problema en base de datos:**
+- Tablas con múltiples campos opcionales/nulos
+- Alteraciones costosas en tablas con millones de registros
+- Cambios en un contexto bloquean o afectan a otros
+
+**Ejemplo**: Modificar `User` para `Admin` impacta en `Auth`, `Assignee`, etc.
+
+**Problema en APIs:**
+- ¿Un endpoint `/user` o múltiples como `/assignee`, `/auth-user`?
+- Endpoint único requiere lógica adicional para discriminar tipos
+- Controladores más complejos y difíciles de mantener
+- Dependencias innecesarias incluso con controladores separados
+
+### 3. Testabilidad
+
+Tipos genéricos llevan a **duplicación de pruebas**:
+
+- Pruebas separadas para `User`, `Assignee`, `AuthUser`, etc.
+- Riesgo de Object Mothers gigantes con métodos para cada variación
+- Dificultad para mantener consistencia en los tests
+
+**Solución**: Factories/Builders específicos por tipo:
+
 ```typescript
 // test/factories/UserFactory.ts
 export const createUser = (overrides: Partial<User> = {}): User => ({
