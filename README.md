@@ -366,33 +366,6 @@ Sin esperar al envío del formulario, queremos proporcionar feedback inmediato m
   }, [formData]);
 ```
 
-## No siempre es necesario usar arquitectura hexagonal
-
-Existen múltiples enfoques válidos para conseguir aplicaciones mantenibles y testeables; la elección debe ser pragmática. Lo fundamental es el desacoplamiento de dependencias externas y la claridad en las responsabilidades, no el cumplimiento estricto de un patrón. Consideraciones prácticas:
-
-- ¿Cuándo considerar hexagonal?
-  - Dominio con reglas de negocio relevantes o complejas.
-  - Necesidad de múltiples adaptadores (REST, GraphQL, CLI, pruebas, migración de infra).
-  - Equipos grandes o proyectos a largo plazo donde imponer límites claros mejora la colaboración.
-  - Requisito de pruebas aisladas (unitarias sobre use-cases/domain y tests de integración sobre adaptadores).
-
-- ¿Cuándo no conviene?
-  - Prototipos, MVPs o proyectos muy pequeños y de corta vida.
-  - Aplicaciones extremadamente simples (CRUD sin lógica de negocio).
-  - Cuando la sobrecarga de capas y archivos complica más que ayuda al equipo.
-
-- Alternativas y estrategias intermedias
-  - Empezar con una separación mínima: domain (modelos/validaciones) + servicios de acceso a datos.
-  - Aplicar principios SOLID, composición y tests antes de introducir más capas.
-  - Evolucionar incrementalmente: identificar seams (puntos donde cambiar dependencias) y extraer repositorios/use-cases cuando sea necesario.
-
-- Reglas prácticas para decidir
-  - Priorizar claridad y coste de mantenimiento sobre la pureza del patrón.
-  - Introducir hexagonal de forma incremental: primero interfaces y tests, luego implementaciones concretas.
-  - Mantener un “composition root” (main/composición) separado de la lógica de negocio.
-
-Resumen: la arquitectura hexagonal es una herramienta poderosa, pero no un requisito universal. Evaluar costo/beneficio según el contexto y preferir una adopción progresiva cuando aporte valor real al mantenimiento, pruebas y evolución del sistema.
-
 ### Programación funcional en arquitectura hexagonal
 
 En el contexto de **JavaScript en frontend**, el uso de clases no es tan común como en otros lenguajes orientados a objetos. Por eso, en este enfoque hemos preferido evitarlas y adoptar un estilo más funcional.
