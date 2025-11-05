@@ -366,69 +366,6 @@ Sin esperar al envío del formulario, queremos proporcionar feedback inmediato m
   }, [formData]);
 ```
 
-### ¿Tienen sentido los ValueObjects en el frontend?
-
-En programación orientada a objetos, un **ValueObject** encapsula un valor y concentra la lógica asociada a él. Así evitamos que esa lógica termine dispersa en la entidad principal. Por ejemplo, en lugar de que la clase `Course` tenga propiedades primitivas como `string` o `number`, cada propiedad se representa mediante su propio ValueObject: `CourseTitle`, `ImageUrl`, `CourseId`, etc.
-
-La ventaja es que, si necesitamos agregar validaciones (ejemplo: longitud mínima o máxima del título), no lo haríamos en la clase `Course`, sino en el ValueObject correspondiente.
-
----
-
-### ¿Y en el frontend?
-
-En el frontend podemos aplicar el mismo patrón, pero de forma más ligera y funcional. En lugar de definir clases, podemos encapsular cada valor en un archivo independiente —lo que podríamos llamar un **ValueFile**— que exporta:
-
-1. **El tipo semántico** (alias sobre un primitivo).
-2. **Las reglas de validación**.
-3. **Las funciones auxiliares** (errores, normalizaciones, etc.).
-
-Ejemplo en **TypeScript** (`CourseTitle.ts`):
-
-```ts
-// Tipo semántico
-export type CourseTitle = string;
-
-// Constantes de validación
-export const COURSE_TITLE_MIN_LENGTH = 5;
-export const COURSE_TITLE_MAX_LENGTH = 100;
-
-// Validaciones
-export function isCourseTitleValid(title: string): boolean {
-  return (
-    title.length >= COURSE_TITLE_MIN_LENGTH &&
-    title.length <= COURSE_TITLE_MAX_LENGTH
-  );
-}
-
-// Error asociado
-export function CourseTitleNotValidError(title: string): Error {
-  return new Error(`Title "${title}" is not valid.`);
-}
-```
-
-De esta forma, en la interfaz `Course` ya no trabajamos con `string`, sino con `CourseTitle`:
-
-```ts
-export interface Course {
-  id: CourseId;
-  title: CourseTitle;
-  imageUrl: ImageUrl;
-}
-```
-
----
-
-### Beneficios de este enfoque
-
-* **Semántica fuerte:** el código expresa mejor el dominio (`CourseTitle` vs `string`).
-* **Consistencia:** las reglas viven junto al valor que afectan.
-* **Evolutivo:** si al principio un valor no tiene lógica extra, basta con un alias de tipo. Si más adelante necesita validaciones, lo ampliamos en el mismo archivo, sin ensuciar la entidad principal.
-* **Funcional:** no dependemos de clases ni instancias, pero seguimos respetando la filosofía de los ValueObjects.
-
----
-
-👉 En resumen: **sí tiene sentido aplicar ValueObjects en el frontend**, pero con un enfoque práctico: tipos alias + funciones puras en archivos separados. Es más liviano que en backend, pero mantiene la semántica y disciplina del dominio.
-
 ### Ejemplo real con arquitectura hexagonal
 
 Imaginemos una aplicación en la que debemos mostrar una lista de localizaciones sobre un mapa. Toda la lógica relacionada con pintar los puntos y manejar la interacción con Google Maps (plugins, zoom, popups, etc.) vive en la **UI**, dentro de nuestros componentes de React.
