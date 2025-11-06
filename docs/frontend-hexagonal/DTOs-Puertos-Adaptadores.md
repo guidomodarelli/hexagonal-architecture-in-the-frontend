@@ -17,7 +17,7 @@ infraestructura  →  aplicacion  →  dominio
 
 Nunca: `aplicacion → infraestructura` ni `dominio → (aplicacion|infraestructura)`.
 
-Más detalle en: `docs/hex-frontend/Reglas-de-Dependencias.md`.
+Más detalle en: `docs/frontend-hexagonal/Reglas-de-Dependencias.md`.
 
 ---
 
@@ -126,8 +126,8 @@ infraestructura/repositorios/...      # implementa el puerto usando lo anterior
 
 ## Recursos relacionados
 
-- Reglas de importación y ejemplo ESLint: `docs/hex-frontend/Reglas-de-Dependencias.md`
-- Ejemplo completo CreateUser: `docs/hex-frontend/Ejemplo-CreateUser.md`
- - DTOs de aplicación vs infraestructura (cuándo/desde dónde/por qué): `docs/hex-frontend/DTOs-Aplicacion-vs-Infraestructura.md`
- - Ejemplo de lectura (GetUsers): `docs/hex-frontend/Ejemplo-GetUsers.md`
- - Repositorios: contratos de retorno y CQRS: `docs/hex-frontend/Repositorios-Contratos-y-CQRS.md`
+- Reglas de importación y ejemplo ESLint: `docs/frontend-hexagonal/Reglas-de-Dependencias.md`
+- Ejemplo completo CreateUser: `docs/frontend-hexagonal/Ejemplo-CreateUser.md`
+ - DTOs de aplicación vs infraestructura (cuándo/desde dónde/por qué): `docs/frontend-hexagonal/DTOs-Aplicacion-vs-Infraestructura.md`
+ - Ejemplo de lectura (GetUsers): `docs/frontend-hexagonal/Ejemplo-GetUsers.md`
+ - Repositorios: contratos de retorno y CQRS: `docs/frontend-hexagonal/Repositorios-Contratos-y-CQRS.md`

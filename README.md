@@ -455,13 +455,13 @@ Por eso, el repositorio en infraestructura se encarga de hacer la **traducción*
 
 Para profundizar en dudas comunes al aplicar esta arquitectura en frontend, hay guías dedicadas:
 
-- Dónde van los DTOs, puertos y adaptadores, con convenciones y anti‑patrones: `docs/hex-frontend/DTOs-Puertos-Adaptadores.md`
-- Reglas de dependencias e importaciones permitidas + ejemplo ESLint: `docs/hex-frontend/Reglas-de-Dependencias.md`
-- Ejemplo completo CreateUser (árbol de carpetas y código): `docs/hex-frontend/Ejemplo-CreateUser.md`
- - DTOs de aplicación vs infraestructura (cuándo/desde dónde/por qué): `docs/hex-frontend/DTOs-Aplicacion-vs-Infraestructura.md`
- - Ejemplo de lectura (GetUsers) con filtros/paginado: `docs/hex-frontend/Ejemplo-GetUsers.md`
- - Repositorios: contratos de retorno (entidades vs read models) y CQRS: `docs/hex-frontend/Repositorios-Contratos-y-CQRS.md`
- - Manejo de errores (dominio vs infraestructura) + ejemplo OpenSearch: `docs/hex-frontend/Errores-y-Excepciones.md`
+- Dónde van los DTOs, puertos y adaptadores, con convenciones y anti‑patrones: `docs/frontend-hexagonal/DTOs-Puertos-Adaptadores.md`
+- Reglas de dependencias e importaciones permitidas + ejemplo ESLint: `docs/frontend-hexagonal/Reglas-de-Dependencias.md`
+- Ejemplo completo CreateUser (árbol de carpetas y código): `docs/frontend-hexagonal/Ejemplo-CreateUser.md`
+ - DTOs de aplicación vs infraestructura (cuándo/desde dónde/por qué): `docs/frontend-hexagonal/DTOs-Aplicacion-vs-Infraestructura.md`
+ - Ejemplo de lectura (GetUsers) con filtros/paginado: `docs/frontend-hexagonal/Ejemplo-GetUsers.md`
+ - Repositorios: contratos de retorno (entidades vs read models) y CQRS: `docs/frontend-hexagonal/Repositorios-Contratos-y-CQRS.md`
+ - Manejo de errores (dominio vs infraestructura) + ejemplo OpenSearch: `docs/frontend-hexagonal/Errores-y-Excepciones.md`
 
 Resumen de decisiones clave:
 - DTOs externos viven en `infraestructura/api/dto`; la aplicación define sus propios inputs (comandos) y no importa DTOs de infra.
