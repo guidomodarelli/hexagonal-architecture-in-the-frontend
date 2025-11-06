@@ -188,13 +188,13 @@ await createCourse({ title: '...', description: '...', duration: 3600 });
 
 ### **¿Por qué usar casos de uso en lugar de servicios genéricos?**
 
-| Aspecto | Casos de Uso | Servicios Genéricos |
-|---------|--------------|---------------------|
-| **Granularidad** | Una acción específica del usuario | Agrupación de operaciones relacionadas |
-| **Claridad** | Nombre explícito (`CreateCourse`, `DeleteCourse`) | Nombres genéricos (`CourseService.create()`) |
-| **Testabilidad** | Tests enfocados en un flujo específico | Tests que cubren múltiples flujos |
-| **Mantenibilidad** | Cambios localizados a una operación | Cambios pueden afectar múltiples operaciones |
-| **Documentación** | El código es autodocumentado | Requiere documentación adicional |
+| Aspecto            | Casos de Uso                                      | Servicios Genéricos                          |
+| ------------------ | ------------------------------------------------- | -------------------------------------------- |
+| **Granularidad**   | Una acción específica del usuario                 | Agrupación de operaciones relacionadas       |
+| **Claridad**       | Nombre explícito (`CreateCourse`, `DeleteCourse`) | Nombres genéricos (`CourseService.create()`) |
+| **Testabilidad**   | Tests enfocados en un flujo específico            | Tests que cubren múltiples flujos            |
+| **Mantenibilidad** | Cambios localizados a una operación               | Cambios pueden afectar múltiples operaciones |
+| **Documentación**  | El código es autodocumentado                      | Requiere documentación adicional             |
 
 **Casos de uso:**
 * Representan **intenciones del usuario** de forma explícita.
