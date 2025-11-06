@@ -1,6 +1,6 @@
 # Repositorios: contratos y retornos
 
-Objetivo: decidir qué retorna un repositorio y cuándo usar entidades de dominio, sin introducir DTOs de infraestructura fuera de su capa.
+**Objetivo**: decidir qué retorna un repositorio y cuándo usar entidades de dominio, sin introducir DTOs de infraestructura fuera de su capa.
 
 ## Principios
 
@@ -20,7 +20,7 @@ Infra (DTO externo) → [mapper] → Dominio (Entidad)
 - `update`: `Promise<Usuario>` o `Promise<void>`
 - `delete`: `Promise<void>`
 
-Razón: los comandos afectan invariantes del dominio; devolver la entidad/ID asegura consistencia y claridad del flujo. Nunca devuelvas un DTO externo.
+Razón: afectan invariantes del dominio; devolver la entidad/ID asegura consistencia y claridad del flujo. Nunca devuelvas un DTO externo.
 
 ### Lectura
 
@@ -62,7 +62,7 @@ export class RepositorioDeUsuariosFetch implements RepositorioDeUsuarios {
     const dtos = await getUsuarios();
     return dtos.map(dto => new Usuario(dto.id, dto.nombre, dto.email));
   }
-  
+
   // ... resto de métodos
 }
 ```
