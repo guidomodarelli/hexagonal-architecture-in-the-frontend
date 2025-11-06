@@ -248,16 +248,19 @@ Las validaciones deben residir en la capa de **Domain** (preferiblemente en *val
 
 #### 🔄 Patrón Repositorio (Puerto)
 
-Para resolver este problema, utilizamos el patrón repositorio. 
+Para resolver este problema, utilizamos el patrón repositorio.
 
 El Patrón Repositorio define una interfaz (`CourseRepository`) en la capa de **Domain** (puerto) para acceder a los datos, sin exponer los detalles de su implementación.
 
 ```typescript
 // src/modules/courses/domain/repositories/CourseRepository.ts
+import { Course } from '../entities/Course';
+
 export interface CourseRepository {
   save(course: Course): Promise<void>;
   findById(id: string): Promise<Course | null>;
-  // ...
+  findAll(): Promise<Course[]>;
+  delete(id: string): Promise<void>;
 }
 ```
 

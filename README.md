@@ -285,9 +285,8 @@ Para resolver este problema, utilizamos el patrón repositorio.
 
 El Patrón Repositorio define una interfaz (`CourseRepository`) en la capa de **Domain** (puerto) para acceder a los datos, sin exponer los detalles de su implementación.
 
-Dentro de `src/modules/courses/domain/repositories` creamos el archivo `CourseRepository.ts`:
-
 ```typescript
+// src/modules/courses/domain/repositories/CourseRepository.ts
 import { Course } from '../entities/Course';
 
 export interface CourseRepository {
