@@ -319,26 +319,6 @@ Por eso, el repositorio en infraestructura se encarga de hacer la **traducción*
 
 -----
 
-### 🛑 Problemas de la Carpeta `shared` y Tipado Genérico
-
-Una entidad genérica (`User`) centralizada en una carpeta `shared` con muchos campos opcionales (`?` o `null`) puede generar problemas, llevando a un acoplamiento excesivo y dificultades de mantenimiento, escalabilidad y testabilidad.
-
-#### ⚠️ Principales Problemas
-
-  * **Mantenibilidad:** `shared` crece descontroladamente, perdiendo cohesión y dificultando la navegación.
-  * **Escalabilidad:** Se fuerza a tener una única tabla/estructura en la DB con campos *nullable* innecesarios, lo que debilita las restricciones, complica las alteraciones en bases de datos grandes y genera dependencias innecesarias entre contextos (e.g., `Admin` impacta en `Auth`).
-  * **Testabilidad:** Se puede recurrir a duplicar pruebas o a un `Object Mother` gigante, lo que se soluciona mejor con *Factories* o *Builders* específicos por contexto.
-
-#### ✅ Soluciones Recomendadas
-
-1.  **Tipos Específicos por Contexto:** Definir interfaces explícitas en cada módulo/contexto (`Assignee`) que representen las necesidades reales, extendiendo solo una `BaseUser` mínima si es necesario.
-2.  **Modelado Normalizado en BD:** Separar la información obligatoria de la contextual en tablas distintas para reforzar invariantes (restricciones) y evitar `NULLs` innecesarios.
-3.  **Reglas para `shared`:**
-      * Limitar capas compartidas solo a **Domain** e **Infrastructure**, excluyendo la de **Application** (casos de uso).
-      * Aplicar la **Regla de Tres:** Solo mover código a `shared` cuando se haya duplicado al menos dos veces (evaluar al identificar una tercera duplicación).
-
------
-
 ### 🤔 ¿Cuándo Usar y Cuándo Evitar Hexagonal?
 
 La elección debe ser pragmática; lo fundamental es el desacoplamiento, no el cumplimiento estricto del patrón.

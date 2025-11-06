@@ -1,4 +1,6 @@
-# Los problemas de la carpeta `shared`
+# 🛑 Problemas de la Carpeta `shared` y Tipado Genérico
+
+Una entidad genérica (`User`) centralizada en una carpeta `shared` con muchos campos opcionales (`?` o `null`) puede generar problemas, llevando a un acoplamiento excesivo y dificultades de mantenimiento, escalabilidad y testabilidad.
 
 ```typescript
 // ❌ Mal: Interfaz genérica con campos opcionales
@@ -52,7 +54,7 @@ CREATE TABLE users (
 
 ### 1. Tipos compartidos mínimos + tipos de dominio específicos
 
-Mantener en `shared` solo lo estrictamente común y definir interfaces explícitas por contexto:
+Mantener en `shared` solo lo estrictamente común y definir interfaces explícitas en cada módulo/contexto (`Assignee`) que representen las necesidades reales, extendiendo solo una `BaseUser` mínima si es necesario:
 
 ```typescript
 // shared/domain/BaseUser.ts
@@ -71,7 +73,7 @@ export interface Assignee extends BaseUser {
 
 ### 2. Modelado relacional normalizado (recomendado)
 
-Separar la información obligatoria de la contextual en tablas distintas:
+Separar la información obligatoria de la contextual en tablas distintas para reforzar invariantes (restricciones) y evitar `NULLs` innecesarios:
 
 ```sql
 CREATE TABLE users (
@@ -116,7 +118,7 @@ export function mapUserRowToAssignee(row: UserRow): Assignee {
 
 ---
 
-## Los 3 grandes problemas de usar mal `shared`
+## ⚠️ Principales Problemas de usar mal `shared`
 
 ### 1. Mantenibilidad
 
@@ -182,13 +184,11 @@ A pesar de los problemas, contar con un módulo `shared` es útil para evitar du
 ### Reglas de oro
 
 1. **Capas compartidas limitadas**
-   - Solo **dominio** e **infraestructura**
-   - **Nunca** la capa de aplicación (casos de uso)
+   - Limitar capas compartidas solo a **Domain** e **Infrastructure**, excluyendo la de **Application** (casos de uso).
    - Esto asegura que la lógica específica de cada contexto permanezca encapsulada y no se propague innecesariamente
 
 2. **Regla de tres**
-   - Solo mueve a `shared` tras la **segunda duplicación**
-   - Es decir, al identificar la **tercera ocurrencia**, evalúa si es apropiado centralizar en `shared`
+   - Solo mover código a `shared` cuando se haya duplicado al menos dos veces (evaluar al identificar una tercera duplicación).
    - Este enfoque evita la sobreingeniería prematura y asegura que solo se comparte lo que realmente lo amerita
 
 Siguiendo estas reglas, `shared` se mantiene limpio, enfocado y útil, sin convertirse en un punto de acoplamiento excesivo o en una fuente de complejidad innecesaria.
