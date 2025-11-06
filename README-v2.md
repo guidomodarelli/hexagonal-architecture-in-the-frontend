@@ -319,30 +319,6 @@ Por eso, el repositorio en infraestructura se encarga de hacer la **traducción*
 
 -----
 
-### 🤔 ¿Cuándo Usar y Cuándo Evitar Hexagonal?
-
-La elección debe ser pragmática; lo fundamental es el desacoplamiento, no el cumplimiento estricto del patrón.
-
-#### 🟢 ¿Cuándo Considerarla?
-
-  * Dominio con **reglas de negocio relevantes o complejas**.
-  * Necesidad de **múltiples adaptadores** (REST, GraphQL, CLI, migración de infraestructura).
-  * Proyectos a **largo plazo** o con **equipos grandes** donde la claridad de límites es crucial para la colaboración.
-  * Requisito de **pruebas unitarias** aisladas (sobre casos de uso/dominio) y *tests* de integración sobre adaptadores.
-
-#### 🔴 ¿Cuándo No Conviene?
-
-  * **Prototipos**, MVPs o proyectos **muy pequeños** y de corta vida.
-  * Aplicaciones **extremadamente simples** (CRUD sin lógica de negocio).
-  * Cuando la sobrecarga de capas y archivos **complica más que ayuda** al equipo.
-
-#### 💡 Estrategias Intermedias
-
-  * Comenzar con una separación mínima: *domain* (modelos/validaciones) + servicios de acceso a datos.
-  * Priorizar principios SOLID, composición y *tests* antes de introducir más capas.
-  * Evolucionar incrementalmente, extrayendo repositorios/casos de uso cuando se identifiquen puntos clave de cambio (*seams*).
-  * Mantener el *Composition Root* (donde se inyectan dependencias) separado de la lógica de negocio.
-
 ## Guías ampliadas (DTOs, puertos y adaptadores)
 
 Para profundizar en dudas comunes al aplicar esta arquitectura en frontend, hay guías dedicadas:

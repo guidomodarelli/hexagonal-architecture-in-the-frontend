@@ -1,15 +1,15 @@
-## No siempre es necesario usar arquitectura hexagonal
+## 🤔 ¿Cuándo Usar y Cuándo Evitar Hexagonal?
 
 Existen múltiples enfoques válidos para conseguir aplicaciones mantenibles y testeables; la elección debe ser pragmática. Lo fundamental es el desacoplamiento de dependencias externas y la claridad en las responsabilidades, no el cumplimiento estricto de un patrón.
 
-### ¿Cuándo considerar arquitectura hexagonal?
+### 🟢 ¿Cuándo Considerarla?
 
 - **Dominio con reglas de negocio complejas**: cuando la lógica supera simples CRUDs y requiere validaciones o flujos elaborados.
 - **Múltiples adaptadores**: necesidad de soportar REST, GraphQL, CLI, diferentes bases de datos o migraciones de infraestructura.
 - **Equipos grandes o proyectos a largo plazo**: límites claros mejoran la colaboración y reducen conflictos.
 - **Requisito de pruebas aisladas**: tests unitarios sobre use-cases/domain y tests de integración sobre adaptadores específicos.
 
-### ¿Cuándo no conviene?
+### 🔴 ¿Cuándo No Conviene?
 
 - **Prototipos y MVPs**: proyectos de exploración rápida o validación de hipótesis.
 - **Aplicaciones extremadamente simples**: CRUDs sin lógica de negocio significativa.
