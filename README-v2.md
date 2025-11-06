@@ -273,21 +273,6 @@ La capa de **Infrastructure** (el adaptador) es responsable de la **traducción*
 
 -----
 
-### 📝 Estrategia de Refactor (*Legacy* a Hexagonal)
-
-El refactor debe ser incremental y con garantías mediante *tests* de aceptación.
-
-1.  **1️⃣ Añadir *Tests* de Aceptación (E2E):** Cubrir flujos críticos (crear, listar, borrar) y asegurar un entorno determinista (mocks, *seed*).
-2.  **2️⃣ Identificar Responsabilidades (*Seams*):** Mapear UI, orquestación, casos de uso, validaciones y persistencia en el código existente.
-3.  **3️⃣ Migración Gradual a TypeScript:** Migrar primero tipos esenciales (Entidades, DTOs, *interfaces* de repositorio) para ganar seguridad.
-4.  **4️⃣ Definir Interfaz de Repositorio:** Extraer interacciones con la fuente de datos (*localStorage*, API) a una *interface* en *domain* y proveer la implementación concreta en *infrastructure*.
-5.  **5️⃣ Implementar Casos de Uso:** Crear funciones puras en *application* que reciban la interfaz del repositorio (inyección de dependencias).
-6.  **6️⃣ Mover Reglas de Negocio al Dominio:** Crear *value-objects* y validadores. El dominio lanza errores; los casos de uso los capturan.
-7.  **7️⃣ Modularizar `main.ts`:** Reducir a solo la **composición de dependencias** (*Composition Root*): crear repositorios, construir casos de uso y conectar *handlers* de UI.
-8.  **8️⃣ Escribir *Tests* Unitarios:** Una vez aislada la lógica, escribir *tests* unitarios para *domain* y *application* (usando repositorios *mock*) y *tests* de integración para los adaptadores (*infrastructure*).
-
------
-
 ### 🛑 Problemas de la Carpeta `shared` y Tipado Genérico
 
 Una entidad genérica (`User`) centralizada en una carpeta `shared` con muchos campos opcionales (`?` o `null`) puede generar problemas, llevando a un acoplamiento excesivo y dificultades de mantenimiento, escalabilidad y testabilidad.
