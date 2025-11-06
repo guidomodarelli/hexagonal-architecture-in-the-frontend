@@ -1,4 +1,4 @@
-# Manejo de Errores en Arquitectura Hexagonal (Frontend)
+# Manejo de Errores
 
 Regla general: los errores se originan en la capa donde se detecta la condición anómala, pero se expresan con el vocabulario adecuado de cada capa.
 
@@ -19,7 +19,7 @@ Regla general: los errores se originan en la capa donde se detecta la condición
 - Evitan filtrar detalles de librerías externas (nombres de clases, códigos específicos, etc.).
 
 ```typescript
-// Controlador - MAL EJEMPLO
+// Controlador - ❌ MAL EJEMPLO
 export const searchController = async (req, res) => {
   try {
     const result = await searchUseCase.execute(req.body);
@@ -34,7 +34,7 @@ export const searchController = async (req, res) => {
   }
 };
 
-// Controlador - BUEN EJEMPLO
+// Controlador - ✅ BUEN EJEMPLO
 export const searchController = async (req, res) => {
   try {
     const result = await searchUseCase.execute(req.body);
