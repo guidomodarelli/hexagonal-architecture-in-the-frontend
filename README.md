@@ -1,62 +1,209 @@
-# Arquitectura Hexagonal en el Frontend
+# 🧱 Arquitectura Hexagonal
 
-Este proyecto demuestra cómo implementar la arquitectura hexagonal (también conocida como arquitectura de puertos y adaptadores) en aplicaciones frontend. Esta arquitectura promueve la separación de responsabilidades y mejora la mantenibilidad y escalabilidad del código.
+La **Arquitectura Hexagonal** (también conocida como *Ports and Adapters*) busca desacoplar la lógica de negocio central del resto del sistema, permitiendo una mayor flexibilidad, mantenibilidad y capacidad de prueba.
 
-## ¿Existe lógica de negocio en el frontend?
+---
 
-Efectivamente, las aplicaciones frontend contienen lógica de negocio responsable de procesar datos, validar entradas y coordinar la interacción entre componentes de la interfaz. El objetivo es organizar esta lógica manteniéndola separada de la presentación e infraestructura, lo cual se logra mediante la arquitectura hexagonal.
+## 🧩 Capas Principales
 
-La lógica de negocio define y controla las reglas y procesos que rigen la operación de una aplicación, independientemente del framework utilizado. Incluye validaciones, cálculos y orquestación de llamadas a servicios externos, y debe ser fácilmente testeable y mantenible.
+### **1️⃣ Dominio (Domain)**
 
-Por ejemplo, al crear una nueva issue en GitHub, el frontend valida que no se pueda crear sin título, aunque esta validación también ocurra en el backend. Esta lógica reside en el frontend.
+Es el núcleo de la aplicación y contiene **la lógica de negocio central**.
+Define las **reglas de negocio** y no depende de ninguna otra capa.
 
-También consideramos la estructura de datos específica para cada contexto. Los datos de usuario necesarios en la página principal difieren de los requeridos en el desplegable de asignación de issues, requiriendo modelos distintos aunque compartan algunos campos.
+Elementos típicos del dominio:
 
-Podríamos crear una interfaz TypeScript con campos opcionales:
+* **Entidades**
+* **Value Objects**
+* **Servicios de dominio**
+* **Tipos e interfaces**
+* **Funciones de validación**
 
-```typescript
-interface User {
-  id: string;
-  username: string;
-  avatarUrl: string;
-  name?: string; // Opcional
-  status?: 'active' | 'inactive'; // Opcional
-}
+📌 *Ejemplo:* `Auth`, `Product`, `Course`, `AuthRepository`, `ProductRepository`, `CourseRepository`
+
+---
+
+### **2️⃣ Aplicación (Application)**
+
+Actúa como **puente entre el dominio y el mundo exterior**.
+Se encarga de los **casos de uso** y del **flujo transaccional** de la aplicación.
+Aquí es donde se orquesta la comunicación entre las diferentes capas.
+
+📌 *Ejemplo:* `AuthCommand`, `AuthCommandHandler`, `Authenticator`, `CourseCreator`, `CourseRenamer`
+
+---
+
+### **3️⃣ Infraestructura (Infrastructure)**
+
+Contiene las **implementaciones concretas** de los detalles técnicos:
+
+* Llamadas a **APIs**
+* Acceso a **bases de datos**
+* **Ficheros** e **I/O**
+* Código **acoplado a librerías o vendors externos**
+
+Aquí se implementan las **interfaces definidas en el dominio**, traduciéndolas a código funcional según la tecnología utilizada.
+
+📌 *Ejemplo:* `MySQLCourseRepository`, `RedisAuthRepository`
+
+---
+
+## 🧭 Dependencias entre Capas
+
+Las dependencias **siempre deben apuntar hacia el interior**:
+
+> Las capas externas dependen de las internas, **nunca al revés**.
+
+```
+❌ Estructura Incorrecta:
+⊢- application
+  ⊢- AuthCommand
+  ⊢- AuthCommandHandler
+  ⊢- Authenticator
+  ⊢- CourseCreator
+  ⊢- CourseRenamer
+⊢- domain
+  ⊢- Auth
+  ⊢- Product
+  ⊢- Course
+  ⊢- AuthRepository
+  ⊢- ProductRepository
+  ⊢- CourseRepository
+⊢- infrastructure
+  ⊢- MySQLCourseRepository
+  ⊢- RedisAuthRepository
 ```
 
-Sin embargo, esto añadiría condicionales innecesarios y complicaría el mantenimiento. Preferimos interfaces específicas para cada caso de uso:
+---
 
-```typescript
-interface User {
-  id: string;
-  username: string;
-  avatarUrl: string;
-}
+## 🏗️ Arquitectura Hexagonal + Vertical Slicing
 
-interface Assignee {
-  id: string;
-  username: string;
-  avatarUrl: string;
-  name: string; // Campo requerido para el desplegable
-  status: 'active' | 'inactive'; // Campo requerido para el desplegable
-}
-```
+El concepto de **Vertical Slicing** propone dividir el sistema en **funcionalidades verticales completas**, donde cada *slice* incluye todas las capas necesarias (dominio, aplicación e infraestructura) para entregar un valor funcional al usuario.
 
-Estas decisiones de diseño confirman la existencia de lógica de negocio en el frontend y la importancia de mantenerla bien organizada.
-
-Ambas interfaces comparten campos base, pero `Assignee` incluye campos adicionales necesarios para el contexto específico del desplegable de asignación. Esta separación permite que cada parte de la aplicación utilice la estructura de datos más apropiada, mejorando la claridad y mantenibilidad del código.
-
-## Frameworks + Arquitectura Hexagonal
-
-La arquitectura hexagonal es agnóstica al framework utilizado. Puede implementarse con React, Vue, Angular o cualquier otro framework frontend. La clave está en seguir los principios de separación de responsabilidades y mantener la lógica de negocio aislada de la infraestructura y presentación.
+Cada módulo es **independiente**, lo que favorece la modularidad, la escalabilidad y el trabajo en paralelo entre equipos.
 
 ```
---> View (Page): orquestación y navegación de la UI
---> Component: piezas de UI reutilizables y lógica de presentación
---> Application: Casos de uso y lógica de negocio
---> Domain: Entidades y reglas de negocio
---> Infrastructure: Adaptadores para APIs, almacenamiento, etc.
+✅ Estructura Recomendada:
+⊢- auth
+  ⊢- application
+    ...
+  ⊢- domain
+    ...
+  ⊢- infrastructure
+    ...
+⊢- courses
+  ⊢- application
+    ...
+  ⊢- domain
+    ...
+  ⊢- infrastructure
+    ...
+...
 ```
+
+---
+
+## ⚙️ Regla de Dependencia
+
+La **regla de dependencia** establece que **cada capa solo debe conocer las clases de la capa inmediatamente inferior**.
+
+**Orden jerárquico (de exterior a interior):**
+
+> Infraestructura → Aplicación → Dominio
+
+🔒 Este principio permite modificar las capas externas sin afectar las internas.
+Por ello, los elementos **más variables o dependientes de terceros** se ubican en la **capa de Infraestructura**.
+
+---
+
+## 🔌 Puertos y Adaptadores
+
+* **Puertos (Ports):**
+  Son las **interfaces** definidas en la capa de dominio para desacoplar la lógica de negocio de la infraestructura.
+  📍 *Ejemplo:* `UserRepository`
+
+* **Adaptadores (Adapters):**
+  Son las **implementaciones concretas** de los puertos, las cuales traducen los contratos definidos en el dominio hacia la lógica específica de un proveedor o tecnología.
+  📍 *Ejemplo:* `MySQLUserRepository`
+
+---
+
+🧠 En resumen, la arquitectura hexagonal junto al enfoque de vertical slicing permite desarrollar sistemas **modulares, escalables y fácilmente mantenibles**, donde la lógica de negocio permanece protegida de los detalles técnicos externos.
+
+-----
+
+## 🏛️ Arquitectura Hexagonal en el Frontend: Una Guía Detallada
+
+Esta sección del documento explora la implementación de la **Arquitectura Hexagonal** (también conocida como Arquitectura de Puertos y Adaptadores) en aplicaciones frontend, destacando su rol en la separación de responsabilidades, la mejora de la mantenibilidad y la escalabilidad del código.
+
+### 🧠 Lógica de Negocio en el Frontend
+
+Sí, las aplicaciones frontend **contienen lógica de negocio significativa**. Esta lógica procesa datos, valida entradas del usuario, aplica reglas específicas del dominio y coordina la interacción entre componentes de la interfaz.
+
+**El objetivo clave es mantener esta lógica organizada, testeable y separada de los detalles de presentación (framework UI) e infraestructura (APIs, almacenamiento)**, lo cual se logra mediante la Arquitectura Hexagonal.
+
+  * **Propósito:** Definir y controlar las reglas y procesos de la aplicación, independientemente del *framework*. Incluye validaciones, cálculos y la orquestación de llamadas a servicios externos.
+  * **Ejemplo de Validación:** Al crear un nuevo *issue* en GitHub, el frontend valida que no se pueda crear sin título (aunque esta validación también ocurra en el backend).
+  * **Estructura de Datos:** La lógica de negocio también guía la estructura de datos específica para cada contexto.
+      * **Anti-patrón:** Usar una única interfaz genérica con campos opcionales (`?`), lo que añade condicionales innecesarios y complica el mantenimiento.
+
+        ```typescript
+        interface User {
+          id: string;
+          username: string;
+          avatarUrl: string;
+          name?: string; // Opcional
+          status?: 'active' | 'inactive'; // Opcional
+        }
+        ```
+
+      * **Recomendación:** Crear interfaces específicas para cada caso de uso. Por ejemplo, la interfaz `User` puede ser distinta a la interfaz `Assignee`, aunque compartan campos base, ya que `Assignee` requiere campos específicos para su contexto (e.g., el desplegable de asignación).
+
+        ```typescript
+        interface User {
+          id: string;
+          username: string;
+          avatarUrl: string;
+        }
+
+        interface Assignee {
+          id: string;
+          username: string;
+          avatarUrl: string;
+          name: string; // Campo requerido para el desplegable
+          status: 'active' | 'inactive'; // Campo requerido para el desplegable
+        }
+        ```
+
+Estas decisiones de diseño confirman la existencia de lógica de negocio en el frontend y subrayan la importancia de mantenerla bien organizada y explícita.
+
+Ambas interfaces comparten campos base (`id`, `username`, `avatarUrl`), pero `Assignee` declara como **obligatorios** los campos `name` y `status`, que son necesarios para su contexto específico (por ejemplo, mostrar información completa en un desplegable de asignación). Esta separación tiene múltiples beneficios:
+
+* **Claridad semántica:** cada interfaz expresa exactamente qué campos son necesarios en su contexto, eliminando ambigüedades y condicionales innecesarios (`if (user.name)`).
+* **Seguridad de tipos:** el compilador de TypeScript valida que los campos obligatorios estén presentes, previniendo errores en tiempo de ejecución.
+* **Mantenibilidad:** al cambiar los requisitos de un contexto (e.g., agregar un campo a `Assignee`), solo afectamos el código que realmente lo utiliza, sin propagar cambios a todos los usos de `User`.
+* **Documentación implícita:** la estructura de datos sirve como documentación viva de las reglas del dominio para ese caso de uso.
+
+En resumen, preferir interfaces específicas por contexto sobre interfaces genéricas con campos opcionales mejora la expresividad del código, reduce errores y facilita la evolución del sistema.
+
+-----
+
+### 🛠️ *Frameworks* y Arquitectura Hexagonal
+
+La Arquitectura Hexagonal es **agnóstica** al *framework*. Puede implementarse con React, Vue, Angular o cualquier otro. La clave está en seguir los principios de separación de responsabilidades y aislar la lógica de negocio de la presentación y la infraestructura.
+
+#### 🗺️ Capas y Responsabilidades
+
+El patrón divide la aplicación en las siguientes capas, con una dirección de dependencia definida ($\rightarrow$):
+
+| Capa                           | Responsabilidad Principal                                                                                     |
+| :----------------------------- | :------------------------------------------------------------------------------------------------------------ |
+| **View (Page) + Components**   | Orquestación de la UI, navegación y lógica de presentación (React, Vue, etc.).                                |
+| **Application (Casos de Uso)** | Casos de uso y lógica de negocio pura.                                                                        |
+| **Domain**                     | Entidades, reglas de negocio, validaciones y contratos (*interfaces* de repositorio).                         |
+| **Infrastructure**             | Adaptadores para APIs, almacenamiento (REST, GraphQL, *localStorage*) e implementaciones de los repositorios. |
+
+> La dirección de dependencias es: **Presentation** $\rightarrow$ **Application** $\rightarrow$ **Domain**. La capa **Infrastructure** implementa adaptadores que dependen del Dominio (no al revés).
 
 ```
 +---------------------+
@@ -83,9 +230,13 @@ La arquitectura hexagonal es agnóstica al framework utilizado. Puede implementa
 +---------------------+
 ```
 
+#### 📁 Estructura de Carpetas Sugerida
+
+Un ejemplo de estructura de módulos (e.g., `courses`):
+
 ```text
 src/
-  App.tsx
+  App.tsx ó main.ts (Punto de entrada, composición de dependencias)
   modules/
     courses/
       application/
@@ -96,60 +247,43 @@ src/
           UpdateCourse.ts
       domain/
         entities/
-          Course.ts
+          Course.ts (Modelos inmutables, estructuras centrales)
         repositories/
-          CourseRepository.ts
+          CourseRepository.ts (Contratos/interfaces de acceso a datos)
         value-objects/
-          CourseId.ts
-          CourseTitle.ts
-          CourseDuration.ts
+          CourseId.ts, CourseTitle.ts, CourseDuration.ts (Validaciones y reglas encapsuladas)
       infrastructure/
         rest/
           api/
             CourseApi.ts
           repositories/
-            CourseRepositoryImpl.ts
+            CoursePostgreSQLRepository.ts (Implementaciones concretas)
         graphql/
           api/
             CourseGraphQLApi.ts
           repositories/
-            CourseGraphQLRepositoryImpl.ts
+            CourseGraphQLRepository.ts
       presentation/
         components/
-          CourseList.tsx
-          CourseForm.tsx
+          CourseList.tsx, CourseForm.tsx
         pages/
-          CoursesPage.tsx
+          CoursesPage.tsx (Páginas / Views)
 ```
 
-### Resumen rápido (qué hace cada carpeta)
-- App.tsx: punto de entrada de la aplicación / composición de dependencias.
-- application/use-cases: casos de uso puros; funciones que orquestan la lógica usando interfaces (repositorios).
-- domain/entities: modelos inmutables y estructuras centrales (sin dependencias de infra).
-- domain/repositories: contratos (interfaces) que definen cómo acceder a datos.
-- domain/value-objects: validaciones y reglas encapsuladas (por ejemplo, CourseId, CourseTitle, CourseDuration).
-- infrastructure/*: implementaciones concretas de los repositorios y adaptadores de I/O (REST, GraphQL, etc.).
-- presentation/*: páginas (Views) y componentes (Components) del UI; deben usar casos de uso o servicios, no lógica de dominio.
+### 📂 Resumen rápido (qué hace cada carpeta)
 
-### Buenas prácticas sugeridas
-- Inyectar repositorios en los casos de uso (evitar acoplar a implementaciones).
-- Mantener validaciones en value-objects / domain.
-- Los adaptadores (infrastructure) traducen DTOs ↔ domain entities.
-- La capa presentation solo orquesta interacción y muestra errores/validaciones ya provistas por domain/application.
-- Evitar lógica de negocio en componentes UI; usar casos de uso para operaciones complejas.
-- Usar hooks personalizados para encapsular lógica de presentación reutilizable.
-- Dirección de dependencias: presentation → application → domain; infrastructure implementa adaptadores que dependen del dominio (no al revés).
-- Escribir tests unitarios para casos de uso y lógica de dominio, y tests de integración para adaptadores e interacción UI.
+| Carpeta / Archivo               | Responsabilidad                                                                                                                                                                |
+| :------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **App.tsx ó main.ts**           | Punto de entrada de la aplicación; composición de dependencias (bootstrapping).                                                                                                |
+| **application/use-cases/**      | Casos de uso puros; funciones que orquestan la lógica de negocio usando interfaces (repositorios).                                                                             |
+| **domain/entities/**            | Modelos inmutables y estructuras centrales del dominio (sin dependencias de infraestructura).                                                                                  |
+| **domain/repositories/**        | Contratos (interfaces) que definen cómo acceder a datos; puertos de la arquitectura.                                                                                           |
+| **domain/value-objects/**       | Validaciones y reglas encapsuladas en tipos semánticos (ej: `CourseId`, `CourseTitle`, `CourseDuration`).                                                                      |
+| **infrastructure/**             | Implementaciones concretas de repositorios y adaptadores de I/O (REST, GraphQL, localStorage, etc.); adaptadores de la arquitectura.                                           |
+| **presentation/pages/ (Views)** | Punto de entrada a nivel de ruta/pantalla, orquesta la UI, compone componentes, maneja navegación y conecta casos de uso, sin lógica de dominio.                               |
+| **presentation/components/**    | Piezas de UI reutilizables con estado/efectos de presentación y validaciones de UI. Pueden invocar casos de uso a través de *props* o *hooks*; no contienen lógica de dominio. |
 
-La arquitectura hexagonal busca separar la lógica de negocio de la lógica de interfaz de usuario (mostrar/ocultar elementos, manejo de inputs, etc.).
-
-Así, si decidimos cambiar de framework en el futuro, la lógica de negocio permanecerá intacta y solo será necesario reescribir la capa de presentación.
-
-Al organizar la aplicación en capas, surge la pregunta sobre dónde ubicar la lógica de interfaz de usuario que maneja el framework: ¿es dominio, aplicación o infraestructura?
-
-Podríamos considerarla infraestructura, ya que el framework es una dependencia externa. Sin embargo, esta capa a menudo sirve como punto de entrada en los tests unitarios, tradicionalmente asociada con la capa de aplicación.
-
-Además, las particularidades de los frameworks frecuentemente limitan la estructura de la aplicación, por ejemplo, requiriendo un archivo `main.ts` dentro de la carpeta `src`. Esto sugiere que la capa de presentación trasciende la simple infraestructura.
+> **Regla clave:** La capa de presentación (pages/components) **usa** casos de uso; la aplicación **depende** de interfaces del dominio; la infraestructura **implementa** esas interfaces. El dominio nunca importa de infraestructura o presentación.
 
 ### View vs Component (en React)
 
@@ -157,87 +291,101 @@ Además, las particularidades de los frameworks frecuentemente limitan la estruc
 View (Page) --> Component --> Use Case --> Repository <--- Impl Repository
 ```
 
-- View (Page): entrada a nivel de ruta/pantalla; orquesta la UI, compone componentes, maneja navegación y conecta casos de uso. Debe evitar lógica de dominio.
-- Component: pieza de UI reutilizable con estado/efectos de presentación y validaciones de UI; no contiene reglas de negocio, pero puede invocar casos de uso a través de props o hooks.
-- Beneficio: separar View y Component mejora reusabilidad, testeo y claridad de responsabilidades dentro de la capa de presentación.
+> La separación entre **View (Page)** y **Component** mejora la reusabilidad, testeabilidad y claridad de responsabilidades:
 
-## Tu primer caso de uso utilizando arquitectura hexagonal: Aplicación, dominio e infraestructura
+#### ✨ Buenas Prácticas Clave
 
-Vamos a crear un caso de uso desde cero: la creación de un curso. Tenemos un componente React que se encargará de pintar el formulario, manejar errores de validación, etc. Lo que nos interesa ahora es cómo gestionar la lógica de negocio y cómo guardamos los datos del curso.
+* **Inyección de dependencias:** Pasar repositorios (interfaces) a los casos de uso para evitar el acoplamiento a implementaciones concretas. Esto facilita el testing y el cambio de adaptadores.
+* **Validaciones en Domain:** Mantener las validaciones en la capa de **Domain** (e.g., *value-objects*), permitiendo su reutilización tanto en casos de uso como en la UI para feedback inmediato.
+* **Traducción en Infrastructure:** Los adaptadores de **Infrastructure** deben traducir DTOs externos a entidades de dominio y viceversa, aislando el dominio de cambios en APIs externas.
+* **Presentation como orquestadora:** La capa de **Presentation** solo orquesta la interacción del usuario y muestra errores/validaciones provistas por Domain/Application, sin contener lógica de negocio.
+* **Casos de uso para operaciones complejas:** Evitar lógica de negocio compleja en componentes de UI; delegar operaciones complejas a casos de uso bien definidos.
+* **Hooks personalizados:** Usar hooks personalizados (en React) para encapsular lógica de presentación reutilizable (estado de formularios, manejo de errores de UI, efectos visuales), manteniendo los componentes limpios.
+* **Dirección de dependencias:** `presentation → application → domain`; `infrastructure` implementa adaptadores que dependen del dominio (no al revés). El dominio nunca importa de capas superiores.
+* **Testing por capas:** Escribir tests unitarios para casos de uso y lógica de dominio (usando mocks de repositorios), tests de integración para adaptadores (verificando traducción de DTOs) y tests E2E para la interacción UI completa.
 
-### Definiendo la entidad del dominio
+##### 🎯 Sobre la Capa de Presentación
 
-Dentro de `src/modules/courses/domain/entities` creamos el archivo `Course.ts`:
+La arquitectura hexagonal busca separar la **lógica de negocio** de la **lógica de presentación** (mostrar/ocultar elementos, manejo de inputs, animaciones, routing).
+
+Si decidimos cambiar de framework en el futuro, la lógica de negocio permanecerá intacta y solo será necesario reescribir la capa de presentación.
+
+**¿Dónde ubicar la lógica del framework?**
+
+Podríamos considerarla infraestructura, ya que el framework es una dependencia externa. Sin embargo, esta capa:
+
+* Sirve como **punto de entrada** en aplicaciones frontend (tradicionalmente asociado con la capa de aplicación).
+* Tiene **particularidades** que limitan la estructura (e.g., `main.ts` en `src/`, convenciones de routing).
+* Orquesta la **experiencia del usuario**, conectando casos de uso con la interfaz visible.
+
+Por ello, tratamos **Presentation** como una capa independiente con responsabilidades claras:
+
+* **Pages (Views):** Punto de entrada de rutas, orquesta componentes, maneja navegación y conecta casos de uso. Sin lógica de dominio.
+* **Components:** Piezas de UI reutilizables con estado/efectos de presentación. Invocan casos de uso a través de *props* o *hooks*; no contienen lógica de dominio.
+* **Hooks personalizados:** Encapsulan lógica de presentación reutilizable (gestión de formularios, estados de carga, efectos visuales).
+
+Esta separación garantiza que cambiar de React a Vue, Svelte o cualquier otro framework solo afecte la capa de presentación, preservando intacta toda la lógica de negocio en `application` y `domain`.
+
+-----
+
+### 📝 Casos de Uso y Patrón Repositorio
+
+Vamos a crear un caso de uso desde cero: la creación de un curso. Contamos con un componente React encargado de renderizar el formulario y manejar los errores de validación. Lo que nos interesa ahora es definir cómo gestionaremos la lógica de negocio y cómo guardaremos los datos del curso.
+
+#### 🏗️ Creación de un Caso de Uso (Ejemplo: `CreateCourse`)
+
+1.  **Definir la Entidad del Dominio** (`Course.ts` dentro de `src/modules/courses/domain/entities`):
+
+    ```typescript
+    export interface Course {
+      id: string;
+      title: string;
+      description: string;
+      duration: number; // duración en segundos
+    }
+    ```
+
+2.  **Definir la Request del Caso de Uso** (`CreateCourse.ts` dentro de `src/modules/courses/application/use-cases`):
+
+    ```typescript
+    import { Course } from '../../domain/entities/Course';
+
+    export interface CreateCourseRequest {
+      title: string;
+      description: string;
+      duration: number; // duración en segundos
+    }
+
+    export type CreateCourseResponse = void;
+
+    export function CreateCourse(request: CreateCourseRequest): Promise<CreateCourseResponse> {
+      // Implementación del caso de uso
+    }
+    ```
+
+    * Se usa un `CreateCourseRequest` separado de la entidad `Course` para asegurar que el cliente solo proporcione los campos necesarios para la creación (e.g., excluyendo el `id`, que es generado por el sistema).
+    * `CreateCourseResponse` es `void` en este ejemplo, pero podría devolver el `id` o el objeto `Course` si fuera necesario.
+
+3.  **Inyectar Dependencias** (enfoque funcional): Los casos de uso son funciones puras que reciben sus dependencias (e.g., el `CourseRepository`) como parámetros.
+
+**¿Cómo guardamos el curso, si desde la capa de aplicación no sabemos nada de infraestructura?**
+
+#### 🛡️ Value Objects y Validaciones
+
+Las validaciones deben residir en la capa de **Domain** (preferiblemente en *value-objects* o funciones de validación).
+
+  * **Value Objects Funcionales:** En el frontend, se pueden implementar como **funciones puras** y **tipos alias** en archivos separados (*ValueFile*), sin necesidad de clases, encapsulando el tipo, las reglas de validación y las funciones auxiliares.
+      * Esto permite reutilizar las funciones de validación en la lógica de UI para proporcionar *feedback* inmediato al usuario.
+  * **Función de Validación Central:** Se puede definir una función como `ensureCourseIsValid(course)` que agrupa las validaciones individuales del dominio y lanza errores si no se cumplen.
+
+#### 🔄 Patrón Repositorio (Puerto)
+
+Para resolver este problema, utilizamos el patrón repositorio.
+
+El Patrón Repositorio define una interfaz (`CourseRepository`) en la capa de **Domain** (puerto) para acceder a los datos, sin exponer los detalles de su implementación.
 
 ```typescript
-export interface Course {
-  id: string;
-  title: string;
-  description: string;
-  duration: number; // duración en segundos
-}
-```
-
-Dentro de `src/modules/courses/application/use-cases` creamos el archivo `CreateCourse.ts`:
-
-```typescript
-import { Course } from '../../domain/entities/Course';
-
-export interface CreateCourseRequest {
-  title: string;
-  description: string;
-  duration: number; // duración en segundos
-}
-
-export type CreateCourseResponse = void;
-
-export function CreateCourse(request: CreateCourseRequest): Promise<CreateCourseResponse> {
-  // Implementación del caso de uso
-}
-```
-
-¿Cómo guardamos el curso, si desde la capa de aplicación no sabemos nada de infraestructura?
-
-#### FAQs
-
-**¿Para qué sirven `CreateCourseRequest` y `CreateCourseResponse`?**
-`CreateCourseRequest` define la estructura de los datos necesarios para crear un curso, mientras que `CreateCourseResponse` especifica el tipo de respuesta que el caso de uso devolverá. En este caso, `CreateCourseResponse` es `void`, indicando que no se espera ningún valor de retorno al completar la operación.
-
-**¿Por qué no simplemente usar `Course` como request?**
-Usar `Course` directamente como request podría parecer una solución sencilla, pero no es ideal porque `Course` representa una entidad completa que incluye un `id`, el cual generalmente es generado por el sistema (por ejemplo, una base de datos) al momento de crear el curso. Al definir `CreateCourseRequest`, podemos especificar solo los campos necesarios para la creación del curso, evitando confusión y asegurando que el `id` no sea proporcionado por el cliente.
-
-**¿Y qué pasa con `CreateCourseResponse`?**
-En este caso, `CreateCourseResponse` es `void` porque no necesitamos devolver ningún dato específico tras la creación del curso. Sin embargo, en otros casos de uso, podríamos querer devolver información relevante, como el `id` del curso recién creado o un objeto que represente el curso completo. Definir un tipo de respuesta explícito nos permite mantener la flexibilidad para futuros cambios sin afectar la interfaz del caso de uso.
-
-**¿Por qué no usar `Course` como response?**
-Usar `Course` como response podría ser útil si quisiéramos devolver el curso completo tras su creación. Sin embargo, en este caso específico, decidimos que no es necesario devolver el curso completo, ya que la operación de creación no requiere que el cliente reciba esa información. Al definir `CreateCourseResponse` como `void`, dejamos claro que no se espera ningún valor de retorno, lo que simplifica la interfaz del caso de uso. Esto también nos permite cambiar la implementación en el futuro sin afectar a los consumidores del caso de uso.
-
-**¿Por qué CreateCourse es una función y no una clase?**
-Optamos por una función para mantener la simplicidad y claridad del caso de uso. Las funciones son fáciles de entender y utilizar, especialmente para operaciones que no requieren mantener estado interno. Sin embargo, si el caso de uso necesitara gestionar estado o dependencias complejas, podrías considerar usar una función constructora, una clase, o incluso un patrón de inyección de dependencias para manejar esas necesidades.
-
-**¿Y si necesito dependencias en CreateCourse?**
-Si `CreateCourse` requiere dependencias, como un repositorio para guardar el curso, podemos inyectarlas como parámetros de la función. Por ejemplo:
-
-```typescript
-export function CreateCourse(
-  courseRepository: CourseRepository
-): (request: CreateCourseRequest) => Promise<CreateCourseResponse> {
-  return async (request: CreateCourseRequest): Promise<CreateCourseResponse> => {
-    // Implementación del caso de uso utilizando courseRepository
-  };
-}
-```
-
-**¿Por qué se usan casos de uso en lugar de servicios?**
-Los casos de uso representan acciones específicas que un usuario puede realizar en el sistema, encapsulando la lógica de negocio asociada a esas acciones. Esto proporciona una estructura clara y enfocada para la lógica de negocio, facilitando su comprensión y mantenimiento. Los servicios, por otro lado, pueden volverse genéricos y abarcar múltiples responsabilidades, lo que puede complicar la gestión del código. Al utilizar casos de uso, promovemos una arquitectura más modular y orientada a las acciones del usuario. Mientras que los servicios pueden ser útiles para agrupar funcionalidades relacionadas, los casos de uso ofrecen una manera más directa de representar las operaciones del sistema desde la perspectiva del usuario.
-
-### Patrón Repositorio
-
-Para resolver este problema, utilizamos el patrón repositorio. Este patrón define una interfaz para acceder a los datos sin exponer los detalles de la implementación.
-
-Dentro de `src/modules/courses/domain/repositories` creamos el archivo `CourseRepository.ts`:
-
-```typescript
+// src/modules/courses/domain/repositories/CourseRepository.ts
 import { Course } from '../entities/Course';
 
 export interface CourseRepository {
@@ -248,424 +396,25 @@ export interface CourseRepository {
 }
 ```
 
-#### Añade validaciones a la creación del curso
+#### 🧩 Mapeo en Infraestructura (Adaptador)
 
-Tenemos nuestro caso de uso para crear cursos, pero ahora queremos añadir validación para evitar guardar cursos con un formato incorrecto.
+La capa de **Infrastructure** (el adaptador) es responsable de la **traducción** (mapeo) entre el modelo de persistencia (DTOs externos, filas de DB) y las entidades de **Domain**.
 
-Por ejemplo, queremos validar que el título del curso tenga un mínimo y un máximo de caracteres. Para ello creamos la validación en la carpeta de dominio.
+  * **Principio:** El dominio no debe ser condicionado por la estructura de los datos externos (APIs, JSON, etc.).
 
-Dentro de `src/modules/courses/domain/value-objects` creamos el archivo `CourseTitle.ts`:
+##### Ejemplo de Mapeo
 
-```typescript
-export class CourseTitleNotValidError extends Error {
-  constructor(title: string) {
-    super(`Course title not valid: ${title}`);
-    this.name = 'CourseTitleNotValidError';
-  }
-}
+**Contexto del ejemplo**
 
-export const MIN_COURSE_TITLE_LENGTH = 5;
-export const MAX_COURSE_TITLE_LENGTH = 100;
+Imaginemos una aplicación que muestra una lista de localizaciones en un mapa. La lógica de renderizado (pintar puntos, zoom, popups, interacción con Google Maps) reside en la **capa de presentación** (componentes React). Por su parte, la **infraestructura** implementa un repositorio que obtiene las localizaciones desde una API externa.
 
-export const isCourseTitleValid = (title: string): boolean => {
-  return title.length >= MIN_COURSE_TITLE_LENGTH && title.length <= MAX_COURSE_TITLE_LENGTH;
-};
-```
+**El problema**
 
-También podemos crear una función adicional en la capa de dominio para validar el curso completo, lanzando errores si no cumple con los requisitos.
+La API externa devuelve los datos con una estructura diferente a la que necesitamos en nuestro dominio. Aquí es donde el repositorio debe actuar como **traductor**.
 
-Dentro de `src/modules/courses/domain/entities` creamos el archivo `CourseValidator.ts`:
+El repositorio debe mapear una `ApiLocation` (con `coords: { lat, lng }`) a la entidad de dominio `Location` (con `latitude`, `longitude`).
 
-```typescript
-import { Course } from './Course';
-import { isCourseIdValid, CourseIdNotValidError } from '../value-objects/CourseId';
-import { isCourseTitleValid, CourseTitleNotValidError } from '../value-objects/CourseTitle';
-import { isCourseDurationValid, CourseDurationNotValidError } from '../value-objects/CourseDuration';
-
-export const ensureCourseIsValid = (course: Course): void => {
-  if (!isCourseIdValid(course.id)) {
-    throw new CourseIdNotValidError(course.id);
-  }
-  if (!isCourseTitleValid(course.title)) {
-    throw new CourseTitleNotValidError(course.title);
-  }
-  if (!isCourseDurationValid(course.duration)) {
-    throw new CourseDurationNotValidError(course.duration);
-  }
-  // Aquí podríamos añadir más validaciones para otros campos del curso
-};
-```
-
-Llamaríamos a esta función justo antes de guardar el curso dentro de la función `CreateCourse`.
-
-Sin esperar al envío del formulario, queremos proporcionar feedback inmediato mientras el usuario completa los campos; de este modo podemos invocar las funciones de validación individuales y mostrar errores en tiempo real.
-
-```typescript
-  import { useEffect } from 'react';
-  import { isCourseTitleValid, MIN_COURSE_TITLE_LENGTH, MAX_COURSE_TITLE_LENGTH } from '../../domain/value-objects/CourseTitle';
-  import { isCourseDurationValid } from '../../domain/value-objects/CourseDuration';
-
-  useEffect(() => {
-    const isTitleValid = isCourseTitleValid(formData.title);
-    const isDurationValid = isCourseDurationValid(formData.duration);
-
-    setErrors({
-      title: isTitleValid ? null : `El título debe tener entre ${MIN_COURSE_TITLE_LENGTH} y ${MAX_COURSE_TITLE_LENGTH} caracteres.`,
-      duration: isDurationValid ? null : `La duración debe ser un número positivo.`,
-    });
-  }, [formData]);
-```
-
-## Añade Arquitectura Hexagonal a un proyecto existente
-
-### Plan de refactor: de main.js a arquitectura hexagonal
-
-Objetivo: extraer la lógica, introducir TypeScript y aplicar separación de capas manteniendo la aplicación funcional mediante tests de aceptación.
-
-1. Añadir tests de aceptación (E2E)
-  - Implementar pruebas que cubran los flujos críticos (crear curso, listar, borrar) con Playwright o Cypress.
-  - Asegurar un entorno determinista (seed de localStorage, mocks de red).
-  - Usar estos tests como guardia durante el refactor: la app debe seguir pasando las E2E en cada cambio.
-
-2. Identificar seams y responsabilidades en main.js
-  - Mapear responsabilidades: UI, orquestación, casos de uso, validaciones, persistencia.
-  - Definir puntos de extracción (funciones/objetos que pueden recibir dependencias).
-
-3. Migración incremental a TypeScript
-  - Activar allowJs en tsconfig y renombrar gradualmente archivos a .ts/.tsx.
-  - Migrar primero tipos esenciales (Course, DTOs, interfaces de repositorio) para ganar seguridad de tipo sin bloquear el desarrollo.
-
-4. Definir interfaz de repositorio (infraestructura)
-  - Extraer las interacciones con localStorage a una interfaz en domain/application:
-    ```typescript
-    export interface CourseRepository {
-     save(course: Course): Promise<void>;
-     findAll(): Promise<Course[]>;
-     findById(id: string): Promise<Course | null>;
-     delete(id: string): Promise<void>;
-    }
-    ```
-  - Proveer una implementación concreta (LocalStorageCourseRepository) en infrastructure/.
-
-5. Implementar casos de uso en la capa de aplicación
-  - Crear funciones puras que reciban la interfaz del repositorio (inyección de dependencias):
-    ```typescript
-    export function CreateCourse(repo: CourseRepository) {
-     return async (req: CreateCourseRequest): Promise<void> => { /* ... */ };
-    }
-    ```
-  - Mantener la orquestación y la lógica de negocio en use-cases; UI sólo invoca estos use-cases.
-
-6. Mover reglas de negocio al dominio
-  - Crear value-objects y validadores (CourseTitle, CourseDuration, CourseId, ensureCourseIsValid).
-  - Lanzar errores de dominio desde el dominio; los use-cases los capturan y transforman si es necesario.
-
-7. Modularizar main.ts (composición y bootstrap)
-  - main.ts debe encargarse solo de composición: crear repositorios, construir use-cases y conectar handlers de UI.
-  - Evitar lógica de negocio y acceso directo a localStorage en main.ts.
-
-8. Escribir tests unitarios una vez aislada la lógica
-  - Tests unitarios para domain y application (use-cases) usando repositorios mock.
-  - Tests de integración para adaptadores (LocalStorageCourseRepository).
-
-Checklist rápido
-- [ ] E2E cubriendo flujos críticos en el código legacy.
-- [ ] Interfaz CourseRepository y adaptación a localStorage.
-- [ ] Use-cases puros con inyección de dependencias.
-- [ ] Domain: value-objects y validadores.
-- [ ] main.ts reducido a composición/entorno.
-- [ ] Migración completa a TypeScript y suite de tests unitarios funcionando.
-
-Resultado esperado: código desacoplado, testable y preparado para futuros cambios de infraestructura o framework sin tocar la lógica de negocio.
-
-## No siempre es necesario usar arquitectura hexagonal
-
-Existen múltiples enfoques válidos para conseguir aplicaciones mantenibles y testeables; la elección debe ser pragmática. Lo fundamental es el desacoplamiento de dependencias externas y la claridad en las responsabilidades, no el cumplimiento estricto de un patrón. Consideraciones prácticas:
-
-- ¿Cuándo considerar hexagonal?
-  - Dominio con reglas de negocio relevantes o complejas.
-  - Necesidad de múltiples adaptadores (REST, GraphQL, CLI, pruebas, migración de infra).
-  - Equipos grandes o proyectos a largo plazo donde imponer límites claros mejora la colaboración.
-  - Requisito de pruebas aisladas (unitarias sobre use-cases/domain y tests de integración sobre adaptadores).
-
-- ¿Cuándo no conviene?
-  - Prototipos, MVPs o proyectos muy pequeños y de corta vida.
-  - Aplicaciones extremadamente simples (CRUD sin lógica de negocio).
-  - Cuando la sobrecarga de capas y archivos complica más que ayuda al equipo.
-
-- Alternativas y estrategias intermedias
-  - Empezar con una separación mínima: domain (modelos/validaciones) + servicios de acceso a datos.
-  - Aplicar principios SOLID, composición y tests antes de introducir más capas.
-  - Evolucionar incrementalmente: identificar seams (puntos donde cambiar dependencias) y extraer repositorios/use-cases cuando sea necesario.
-
-- Reglas prácticas para decidir
-  - Priorizar claridad y coste de mantenimiento sobre la pureza del patrón.
-  - Introducir hexagonal de forma incremental: primero interfaces y tests, luego implementaciones concretas.
-  - Mantener un “composition root” (main/composición) separado de la lógica de negocio.
-
-Resumen: la arquitectura hexagonal es una herramienta poderosa, pero no un requisito universal. Evaluar costo/beneficio según el contexto y preferir una adopción progresiva cuando aporte valor real al mantenimiento, pruebas y evolución del sistema.
-
-## Clean Architecture: los problemas de la carpeta `shared`
-
-```typescript
-
-// Mal
-
-export interface User {
-  id: string;
-  username: string;
-  avatarUrl: string;
-  name: string | null; // Opcional
-  status?: 'active' | 'inactive' | null; // Opcional
-}
-
-// Bien
-
-export interface User {
-  id: string;
-  username: string;
-  avatarUrl: string;
-}
-
-export interface Assignee {
-  id: string;
-  username: string;
-  avatarUrl: string;
-  name: string; // Campo requerido para el desplegable
-  status: 'active' | 'inactive'; // Campo requerido para el desplegable
-}
-```
-
-### ¿Y si tuviéramos `User` en `shared` y extendiéramos otras interfaces desde ahí?
-
-Tener una única interfaz `User` en `shared` con muchos campos opcionales puede parecer cómodo, pero tiende a enmascarar responsabilidades y a provocar problemas en la base de datos y en la validación. Los principales problemas son: campos nullable que rompen invariantes, validaciones dispersas y tablas con muchos NULL que dificultan aplicar restricciones.
-
-Problema con la aproximación "todo en una tabla" (ejemplo problemático):
-
-```sql
-CREATE TABLE users (
-  id SERIAL PRIMARY KEY,
-  username VARCHAR(50) NOT NULL,
-  avatar_url VARCHAR(255) NOT NULL,
-  name VARCHAR(100),       -- Nullable
-  status VARCHAR(10)       -- Nullable
-);
-```
-
-Desventajas: no puedes garantizar que `name` o `status` existan cuando el dominio los requiere; la semántica se pierde y las restricciones se vuelven débiles.
-
-Alternativas recomendadas
-
-1) Tipos compartidos mínimos + tipos de dominio específicos
-- Mantener en `shared` sólo lo estrictamente común (id, username, avatarUrl).
-- Definir en cada bounded context/paquete interfaces explícitas que representen las necesidades reales.
-
-```typescript
-// shared
-export interface BaseUser {
-  id: string;
-  username: string;
-  avatarUrl: string;
-}
-
-// domain (assignee)
-export interface Assignee extends BaseUser {
-  name: string;
-  status: 'active' | 'inactive';
-}
-```
-
-2) Modelado relacional normalizado (recomendado para invariantes fuertes)
-- Separar la información obligatoria de la información contextual en tablas distintas.
-
-```sql
-CREATE TABLE users (
-  id SERIAL PRIMARY KEY,
-  username VARCHAR(50) NOT NULL,
-  avatar_url VARCHAR(255) NOT NULL
-);
-
-CREATE TABLE assignees (
-  user_id INT PRIMARY KEY REFERENCES users(id),
-  name VARCHAR(100) NOT NULL,
-  status VARCHAR(10) NOT NULL
-);
-```
-
-Beneficios: restricciones claras, validaciones a nivel de BD y datos sin NULLs innecesarios. Coste: joins para leer datos compuestos.
-
-3) Capas de mapeo en infrastructure
-- La capa de infraestructura debe mapear rows/DTOs a las entidades de dominio que usa la aplicación.
-
-```typescript
-// infrastructure/mapper.ts
-function mapUserRowToAssignee(row: any): Assignee {
-  return {
-    id: String(row.user_id),
-    username: row.username,
-    avatarUrl: row.avatar_url,
-    name: row.name,
-    status: row.status as 'active' | 'inactive'
-  };
-}
-```
-
-Reglas prácticas
-- Mantén `shared` lo más pequeño posible: sólo lo realmente compartido.
-- Crea tipos explícitos por contexto en domain/presentation para evitar condicionales y errores en tiempo de ejecución.
-- Modela la base de datos para reforzar invariantes (usar tablas separadas o constraints), no para acomodar tipos genéricos con NULLs.
-- Usa adaptadores/mappers para traducir entre el modelo de persistencia y las entidades de dominio; la aplicación debe trabajar con tipos claros y validados.
-
-De ese modo evitas la complejidad de un “discrimination mapping” con muchos NULLs y mantienes invariantes claras y verificables tanto en código como en la BD.
-
----
-
-Todo esto hace que si usamos mal la carpeta `shared`, tengamos 3 grandes problemas:
-
-1. **Mantenibilidad**: Al centralizar todo en `shared`, incluyendo entidades y tipos, se pierde la cohesión que se logra al mantenerlos dentro de módulos específicos. Con el tiempo, `shared` puede crecer descontroladamente, dificultando la navegación y el mantenimiento del código. Esto puede llevar a un punto en el que sea necesario reorganizar el contenido para recuperar la cohesión perdida.
-
-2. **Escalabilidad**: El uso excesivo de una entidad genérica como `User` puede llevar a un acoplamiento excesivo entre diferentes contextos. Por ejemplo, si `User` también representa a un `Assignee`, un `AuthUser` o cualquier otro concepto, la tabla correspondiente en la base de datos puede terminar con múltiples campos opcionales o nulos. Esto no solo complica el diseño, sino que también introduce problemas de rendimiento y mantenimiento.
-
-Cuando la tabla crece con campos adicionales para soportar nuevos conceptos, realizar alteraciones en una base de datos con millones de registros puede ser costoso y arriesgado. Además, los cambios en un contexto pueden bloquear o afectar a otros, como cuando se necesita modificar `User` para `Admin` y esto impacta en `Auth`. Este diseño incrementa la complejidad y dificulta la evolución del sistema.
-
-Por ejemplo, ¿deberíamos tener un único endpoint `/user` o múltiples endpoints específicos como `/assignee`, `/auth-user`, etc.? Optar por endpoints separados facilita la gestión y el mantenimiento, ya que cada uno puede manejar un contexto específico. Sin embargo, al centralizar todo en un único endpoint, es común que se introduzca lógica adicional para identificar el tipo de usuario mediante parámetros, lo que puede derivar en controladores más complejos y difíciles de mantener.
-
-Incluso si los controladores están separados, compartir una base de datos con una estructura genérica y mezclada puede generar dependencias innecesarias y aumentar la complejidad. Esto dificulta la implementación de cambios y la optimización de las consultas, afectando la escalabilidad y el rendimiento del sistema.
-
-3. **Testabilidad**: Si tenemos `User` y `Assignee`, es probable que terminemos duplicando pruebas para cubrir ambos casos, ya que cada uno puede tener sus propias opciones y validaciones. Esto puede llevar a redundancia y a un aumento innecesario en la cantidad de pruebas.
-
-Para abordar este problema, podríamos considerar el uso del patrón Object Mother. Sin embargo, este enfoque puede complicarse rápidamente. Por ejemplo, si necesitamos crear un `User` con o sin `name`, tendríamos que añadir métodos específicos para cada caso. Si además tenemos 10 tipos diferentes de usuarios, podríamos terminar con 10 Object Mothers separados o con un único Object Mother gigante lleno de métodos para manejar todas las combinaciones posibles.
-
-Una solución más escalable sería utilizar Factories o Builders específicos para cada tipo de usuario. Esto permite encapsular la lógica de creación de objetos de manera más modular y evita la proliferación de métodos en un único Object Mother. Además, facilita la personalización de los objetos creados para cada contexto, mejorando la claridad y la mantenibilidad de las pruebas.
-
-Por ejemplo:
-
-```typescript
-// Factory para User
-export const createUser = (overrides: Partial<User> = {}): User => ({
-  id: 'default-id',
-  username: 'default-username',
-  avatarUrl: 'default-avatar-url',
-  ...overrides,
-});
-
-// Factory para Assignee
-export const createAssignee = (overrides: Partial<Assignee> = {}): Assignee => ({
-  id: 'default-id',
-  username: 'default-username',
-  avatarUrl: 'default-avatar-url',
-  name: 'default-name',
-  status: 'active',
-  ...overrides,
-});
-```
-
-Con este enfoque, las pruebas pueden centrarse en los casos específicos de cada tipo de usuario, evitando duplicación y manteniendo el código de prueba más limpio y enfocado.
-
-Sin embargo, contar con un módulo `shared` puede ser muy útil para evitar la duplicación de código y simplificar ciertas partes del sistema. Para mantenerlo bajo control y evitar que se convierta en un repositorio desorganizado, seguiremos estas reglas:
-
-1. **Capas compartidas limitadas**: Solo compartiremos las capas de **dominio** e **infraestructura**, excluyendo la capa de **aplicación** (casos de uso). Esto asegura que la lógica específica de cada contexto permanezca encapsulada y no se propague innecesariamente.
-
-2. **Regla de tres**: Solo moveremos código a `shared` cuando se haya duplicado al menos dos veces. Es decir, al identificar una tercera duplicación, evaluaremos si es apropiado centralizar ese código en `shared`. Este enfoque evita la sobreingeniería prematura y asegura que solo se compartan elementos que realmente lo ameriten.
-
-Siguiendo estas reglas, el módulo `shared` se mantendrá limpio, enfocado y útil, sin convertirse en un punto de acoplamiento excesivo o en una fuente de complejidad innecesaria.
-
-### Programación funcional en arquitectura hexagonal
-
-En el contexto de **JavaScript en frontend**, el uso de clases no es tan común como en otros lenguajes orientados a objetos. Por eso, en este enfoque hemos preferido evitarlas y adoptar un estilo más funcional.
-
-Algunos puntos interesantes de este planteo:
-
-1. **Sin instanciación de objetos**
-   No existe un `new Course`. El objeto que recibimos como parámetro ya cumple con la interfaz de curso, así que la responsabilidad se limita a **validar sus propiedades**.
-
-2. **Validaciones como funciones puras**
-   Al no haber constructores, no podemos ejecutar las validaciones en la creación de la instancia. En su lugar, definimos funciones independientes —por ejemplo `courseID.ts`, `courseTitle.ts`, etc.— que validan cada aspecto del curso y lanzan una excepción si algo es incorrecto.
-   De esta forma, podemos tener una función central `ensureCourseIsValid(course)` que agrupe estas validaciones.
-   Además, estas funciones son **reutilizables en la lógica de UI**, manteniendo consistencia entre capas.
-
-3. **Repositorios como funciones sueltas**
-   En vez de definir una interfaz de repositorio y luego instanciarla con algo como `createLocalStorageRepository()`, el tipado y la definición del repositorio pueden hacerse directamente como funciones exportadas.
-   Así, un caso de uso recibe directamente la función que necesita (`saveCourse`, `findCourseById`, etc.), sin necesidad de encapsularlas en un objeto.
-
----
-
-👉 En resumen, este enfoque aprovecha la naturaleza funcional de JavaScript para simplificar la arquitectura:
-
-* **Validaciones** como funciones puras, reutilizables y testeables.
-* **Repositorios** como funciones tipadas, inyectables sin boilerplate.
-* **Casos de uso** que orquestan funciones en lugar de depender de objetos instanciados.
-
-### ¿Tienen sentido los ValueObjects en el frontend?
-
-En programación orientada a objetos, un **ValueObject** encapsula un valor y concentra la lógica asociada a él. Así evitamos que esa lógica termine dispersa en la entidad principal. Por ejemplo, en lugar de que la clase `Course` tenga propiedades primitivas como `string` o `number`, cada propiedad se representa mediante su propio ValueObject: `CourseTitle`, `ImageUrl`, `CourseId`, etc.
-
-La ventaja es que, si necesitamos agregar validaciones (ejemplo: longitud mínima o máxima del título), no lo haríamos en la clase `Course`, sino en el ValueObject correspondiente.
-
----
-
-### ¿Y en el frontend?
-
-En el frontend podemos aplicar el mismo patrón, pero de forma más ligera y funcional. En lugar de definir clases, podemos encapsular cada valor en un archivo independiente —lo que podríamos llamar un **ValueFile**— que exporta:
-
-1. **El tipo semántico** (alias sobre un primitivo).
-2. **Las reglas de validación**.
-3. **Las funciones auxiliares** (errores, normalizaciones, etc.).
-
-Ejemplo en **TypeScript** (`CourseTitle.ts`):
-
-```ts
-// Tipo semántico
-export type CourseTitle = string;
-
-// Constantes de validación
-export const COURSE_TITLE_MIN_LENGTH = 5;
-export const COURSE_TITLE_MAX_LENGTH = 100;
-
-// Validaciones
-export function isCourseTitleValid(title: string): boolean {
-  return (
-    title.length >= COURSE_TITLE_MIN_LENGTH &&
-    title.length <= COURSE_TITLE_MAX_LENGTH
-  );
-}
-
-// Error asociado
-export function CourseTitleNotValidError(title: string): Error {
-  return new Error(`Title "${title}" is not valid.`);
-}
-```
-
-De esta forma, en la interfaz `Course` ya no trabajamos con `string`, sino con `CourseTitle`:
-
-```ts
-export interface Course {
-  id: CourseId;
-  title: CourseTitle;
-  imageUrl: ImageUrl;
-}
-```
-
----
-
-### Beneficios de este enfoque
-
-* **Semántica fuerte:** el código expresa mejor el dominio (`CourseTitle` vs `string`).
-* **Consistencia:** las reglas viven junto al valor que afectan.
-* **Evolutivo:** si al principio un valor no tiene lógica extra, basta con un alias de tipo. Si más adelante necesita validaciones, lo ampliamos en el mismo archivo, sin ensuciar la entidad principal.
-* **Funcional:** no dependemos de clases ni instancias, pero seguimos respetando la filosofía de los ValueObjects.
-
----
-
-👉 En resumen: **sí tiene sentido aplicar ValueObjects en el frontend**, pero con un enfoque práctico: tipos alias + funciones puras en archivos separados. Es más liviano que en backend, pero mantiene la semántica y disciplina del dominio.
-
-### Ejemplo real con arquitectura hexagonal
-
-Imaginemos una aplicación en la que debemos mostrar una lista de localizaciones sobre un mapa. Toda la lógica relacionada con pintar los puntos y manejar la interacción con Google Maps (plugins, zoom, popups, etc.) vive en la **UI**, dentro de nuestros componentes de React.
-
-Por otro lado, en la **infraestructura** tenemos un repositorio encargado de obtener esa lista de localizaciones desde una fuente externa. En este ejemplo, la fuente es un **JSON**. Lo importante es que no podemos modificar ni la estructura ni los nombres de los campos que vienen en ese JSON (como ocurriría si la información viniera de un servicio HTTP externo).
-
-#### Estructura de los datos recibidos (API)
+**Estructura de los datos recibidos (vendor externa)**
 
 El repositorio recibe objetos con esta forma:
 
@@ -679,7 +428,7 @@ export interface ApiLocation {
 }
 ```
 
-#### Estructura de nuestro dominio
+**Estructura de nuestro dominio**
 
 En cambio, dentro de nuestro **dominio** definimos la entidad de la forma que nosotros queremos trabajar:
 
@@ -691,7 +440,7 @@ export interface Location {
 }
 ```
 
-#### Por qué no adaptamos el dominio al API
+**¿Por qué no adaptamos el dominio al vendor externo?**
 
 No deberíamos condicionar nuestro dominio a cómo nos llegan los datos externos.
 
@@ -700,16 +449,15 @@ No deberíamos condicionar nuestro dominio a cómo nos llegan los datos externos
 
 Por eso, el repositorio en infraestructura se encarga de hacer la **traducción** entre el `ApiLocation` y nuestro `Location`. De esta forma aislamos la aplicación de los cambios en la fuente de datos, y mantenemos un dominio limpio, estable y expresivo.
 
----
+-----
 
-## Guías ampliadas (DTOs, puertos y adaptadores)
+### Guías ampliadas (DTOs, puertos y adaptadores)
 
 Para profundizar en dudas comunes al aplicar esta arquitectura en frontend, hay guías dedicadas:
 
 - Dónde van los DTOs, puertos y adaptadores, con convenciones y anti‑patrones: `docs/hex-frontend/DTOs-Puertos-Adaptadores.md`
 - Reglas de dependencias e importaciones permitidas + ejemplo ESLint: `docs/hex-frontend/Reglas-de-Dependencias.md`
 - Ejemplo completo CreateUser (árbol de carpetas y código): `docs/hex-frontend/Ejemplo-CreateUser.md`
-- ADR sobre la decisión de ubicar DTOs en infraestructura: `docs/adr/0001-dtos-en-infraestructura.md`
  - DTOs de aplicación vs infraestructura (cuándo/desde dónde/por qué): `docs/hex-frontend/DTOs-Aplicacion-vs-Infraestructura.md`
  - Ejemplo de lectura (GetUsers) con filtros/paginado: `docs/hex-frontend/Ejemplo-GetUsers.md`
  - Repositorios: contratos de retorno (entidades vs read models) y CQRS: `docs/hex-frontend/Repositorios-Contratos-y-CQRS.md`
@@ -719,4 +467,3 @@ Resumen de decisiones clave:
 - DTOs externos viven en `infraestructura/api/dto`; la aplicación define sus propios inputs (comandos) y no importa DTOs de infra.
 - Puertos (interfaces) en `aplicacion/puertos`; adaptadores (repositorios concretos) en `infraestructura/`.
 - Infraestructura puede importar dominio y aplicación; dominio y aplicación no importan infraestructura.
-- Separar funciones `api/*` del repositorio mejora testabilidad/modularidad; integrarlas en el repositorio es válido si se prefiere simplicidad.
