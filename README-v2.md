@@ -64,12 +64,12 @@ La Arquitectura Hexagonal es **agnóstica** al *framework*. Puede implementarse 
 
 El patrón divide la aplicación en las siguientes capas, con una dirección de dependencia definida ($\rightarrow$):
 
-| Capa | Responsabilidad Principal |
-| :--- | :--- |
-| **View (Page) + Components** | Orquestación de la UI, navegación y lógica de presentación (React, Vue, etc.). |
-| **Application (Casos de Uso)** | Casos de uso y lógica de negocio pura. |
-| **Domain** | Entidades, reglas de negocio, validaciones y contratos (*interfaces* de repositorio). |
-| **Infrastructure** | Adaptadores para APIs, almacenamiento (REST, GraphQL, *localStorage*) e implementaciones de los repositorios. |
+| Capa                           | Responsabilidad Principal                                                                                     |
+| :----------------------------- | :------------------------------------------------------------------------------------------------------------ |
+| **View (Page) + Components**   | Orquestación de la UI, navegación y lógica de presentación (React, Vue, etc.).                                |
+| **Application (Casos de Uso)** | Casos de uso y lógica de negocio pura.                                                                        |
+| **Domain**                     | Entidades, reglas de negocio, validaciones y contratos (*interfaces* de repositorio).                         |
+| **Infrastructure**             | Adaptadores para APIs, almacenamiento (REST, GraphQL, *localStorage*) e implementaciones de los repositorios. |
 
 > La dirección de dependencias es: **Presentation** $\rightarrow$ **Application** $\rightarrow$ **Domain**. La capa **Infrastructure** implementa adaptadores que dependen del Dominio (no al revés).
 
@@ -140,16 +140,16 @@ src/
 
 ### 📂 Resumen rápido (qué hace cada carpeta)
 
-| Carpeta / Archivo | Responsabilidad |
-|:------------------|:----------------|
-| **App.tsx ó main.ts** | Punto de entrada de la aplicación; composición de dependencias (bootstrapping). |
-| **application/use-cases/** | Casos de uso puros; funciones que orquestan la lógica de negocio usando interfaces (repositorios). |
-| **domain/entities/** | Modelos inmutables y estructuras centrales del dominio (sin dependencias de infraestructura). |
-| **domain/repositories/** | Contratos (interfaces) que definen cómo acceder a datos; puertos de la arquitectura. |
-| **domain/value-objects/** | Validaciones y reglas encapsuladas en tipos semánticos (ej: `CourseId`, `CourseTitle`, `CourseDuration`). |
-| **infrastructure/** | Implementaciones concretas de repositorios y adaptadores de I/O (REST, GraphQL, localStorage, etc.); adaptadores de la arquitectura. |
-| **presentation/pages/ (Views)** | Punto de entrada a nivel de ruta/pantalla, orquesta la UI, compone componentes, maneja navegación y conecta casos de uso, sin lógica de dominio. |
-| **presentation/components/** | Piezas de UI reutilizables con estado/efectos de presentación y validaciones de UI. Pueden invocar casos de uso a través de *props* o *hooks*; no contienen lógica de dominio. |
+| Carpeta / Archivo               | Responsabilidad                                                                                                                                                                |
+| :------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **App.tsx ó main.ts**           | Punto de entrada de la aplicación; composición de dependencias (bootstrapping).                                                                                                |
+| **application/use-cases/**      | Casos de uso puros; funciones que orquestan la lógica de negocio usando interfaces (repositorios).                                                                             |
+| **domain/entities/**            | Modelos inmutables y estructuras centrales del dominio (sin dependencias de infraestructura).                                                                                  |
+| **domain/repositories/**        | Contratos (interfaces) que definen cómo acceder a datos; puertos de la arquitectura.                                                                                           |
+| **domain/value-objects/**       | Validaciones y reglas encapsuladas en tipos semánticos (ej: `CourseId`, `CourseTitle`, `CourseDuration`).                                                                      |
+| **infrastructure/**             | Implementaciones concretas de repositorios y adaptadores de I/O (REST, GraphQL, localStorage, etc.); adaptadores de la arquitectura.                                           |
+| **presentation/pages/ (Views)** | Punto de entrada a nivel de ruta/pantalla, orquesta la UI, compone componentes, maneja navegación y conecta casos de uso, sin lógica de dominio.                               |
+| **presentation/components/**    | Piezas de UI reutilizables con estado/efectos de presentación y validaciones de UI. Pueden invocar casos de uso a través de *props* o *hooks*; no contienen lógica de dominio. |
 
 > **Regla clave:** La capa de presentación (pages/components) **usa** casos de uso; la aplicación **depende** de interfaces del dominio; la infraestructura **implementa** esas interfaces. El dominio nunca importa de infraestructura o presentación.
 
