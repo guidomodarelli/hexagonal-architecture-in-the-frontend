@@ -438,4 +438,3 @@ Resumen de decisiones clave:
 - DTOs externos viven en `infraestructura/api/dto`; la aplicación define sus propios inputs (comandos) y no importa DTOs de infra.
 - Puertos (interfaces) en `aplicacion/puertos`; adaptadores (repositorios concretos) en `infraestructura/`.
 - Infraestructura puede importar dominio y aplicación; dominio y aplicación no importan infraestructura.
-- Separar funciones `api/*` del repositorio mejora testabilidad/modularidad; integrarlas en el repositorio es válido si se prefiere simplicidad.

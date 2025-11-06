@@ -362,3 +362,20 @@ La elección debe ser pragmática; lo fundamental es el desacoplamiento, no el c
   * Priorizar principios SOLID, composición y *tests* antes de introducir más capas.
   * Evolucionar incrementalmente, extrayendo repositorios/casos de uso cuando se identifiquen puntos clave de cambio (*seams*).
   * Mantener el *Composition Root* (donde se inyectan dependencias) separado de la lógica de negocio.
+
+## Guías ampliadas (DTOs, puertos y adaptadores)
+
+Para profundizar en dudas comunes al aplicar esta arquitectura en frontend, hay guías dedicadas:
+
+- Dónde van los DTOs, puertos y adaptadores, con convenciones y anti‑patrones: `docs/hex-frontend/DTOs-Puertos-Adaptadores.md`
+- Reglas de dependencias e importaciones permitidas + ejemplo ESLint: `docs/hex-frontend/Reglas-de-Dependencias.md`
+- Ejemplo completo CreateUser (árbol de carpetas y código): `docs/hex-frontend/Ejemplo-CreateUser.md`
+ - DTOs de aplicación vs infraestructura (cuándo/desde dónde/por qué): `docs/hex-frontend/DTOs-Aplicacion-vs-Infraestructura.md`
+ - Ejemplo de lectura (GetUsers) con filtros/paginado: `docs/hex-frontend/Ejemplo-GetUsers.md`
+ - Repositorios: contratos de retorno (entidades vs read models) y CQRS: `docs/hex-frontend/Repositorios-Contratos-y-CQRS.md`
+ - Manejo de errores (dominio vs infraestructura) + ejemplo OpenSearch: `docs/hex-frontend/Errores-y-Excepciones.md`
+
+Resumen de decisiones clave:
+- DTOs externos viven en `infraestructura/api/dto`; la aplicación define sus propios inputs (comandos) y no importa DTOs de infra.
+- Puertos (interfaces) en `aplicacion/puertos`; adaptadores (repositorios concretos) en `infraestructura/`.
+- Infraestructura puede importar dominio y aplicación; dominio y aplicación no importan infraestructura.
