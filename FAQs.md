@@ -110,3 +110,99 @@ Los tests unitarios.
 * En este caso, el resultado podría **generar dudas** dependiendo de **qué tipo de verificaciones** se realicen.
 * Si el test solo valida que la respuesta HTTP sea **`201 Created`**, **no fallaría**, porque el endpoint seguiría respondiendo correctamente.
 * Sin embargo, si la prueba también **comprueba que el registro existe en la base de datos** tras la ejecución, entonces **sí fallaría**, revelando la ausencia del guardado efectivo.
+
+## ❓ FAQs sobre Casos de Uso
+
+### **¿Para qué sirven `CreateCourseRequest` y `CreateCourseResponse`?**
+
+* **`CreateCourseRequest`:** Define el contrato de entrada del caso de uso, especificando exactamente qué datos necesita el sistema para ejecutar la operación.
+* **`CreateCourseResponse`:** Define el contrato de salida, estableciendo qué información se devuelve al completar la operación.
+
+En este ejemplo, `CreateCourseResponse` es `void` porque la operación no necesita retornar datos. Sin embargo, el tipo explícito documenta la intención y facilita futuros cambios.
+
+### **¿Por qué no usar directamente `Course` como request?**
+
+Porque `Course` es una **entidad completa** que incluye el `id`, generalmente asignado por el sistema (base de datos, UUID generator, etc.). 
+
+Al definir `CreateCourseRequest` separado:
+* **Separamos responsabilidades:** el cliente proporciona solo los datos de creación; el sistema genera metadatos (`id`, timestamps).
+* **Evitamos errores:** el compilador impide que el cliente envíe un `id` manualmente.
+* **Mejoramos la semántica:** el código expresa claramente que se trata de una petición de creación, no de una entidad existente.
+
+### **¿Por qué `CreateCourseResponse` es `void` y no `Course`?**
+
+Depende de las necesidades del caso de uso:
+
+* **`void`:** Cuando la operación es un comando puro (patrón CQRS) y no necesitamos devolver datos. Simplifica la interfaz y reduce acoplamiento.
+* **`Course` o `{ id: string }`:** Cuando el cliente necesita el curso creado (e.g., para redirección, actualización de UI). Común en operaciones que requieren el `id` generado.
+
+**Ventaja de definir el tipo explícitamente:** Podemos cambiar de `void` a `Course` sin romper contratos, siempre que documentemos el cambio. El tipo sirve como documentación viva del comportamiento esperado.
+
+### **¿Por qué `CreateCourse` es una función y no una clase?**
+
+Por **simplicidad y funcionalidad**:
+
+* **Funciones puras:** Fáciles de entender, testear y componer. No requieren instanciación ni gestión de estado interno.
+* **Inmutabilidad:** Cada invocación es independiente, sin efectos secundarios ocultos.
+* **Menos boilerplate:** No necesitamos constructores, métodos auxiliares ni keywords como `new` o `this`.
+
+**¿Cuándo usar clases?** Si el caso de uso necesita:
+* Estado interno persistente entre operaciones.
+* Múltiples métodos relacionados (aunque esto podría indicar que necesitas dividir en casos de uso más pequeños).
+* Integración con frameworks que requieren clases (algunos sistemas de DI).
+
+### **¿Cómo inyecto dependencias en `CreateCourse`?**
+
+**Enfoque funcional (currying/factory):**
+
+```typescript
+export function CreateCourse(
+  courseRepository: CourseRepository
+): (request: CreateCourseRequest) => Promise<CreateCourseResponse> {
+  return async (request: CreateCourseRequest): Promise<CreateCourseResponse> => {
+    const course: Course = {
+      id: generateId(),
+      ...request
+    };
+    
+    ensureCourseIsValid(course);
+    await courseRepository.save(course);
+  };
+}
+```
+
+**Uso:**
+```typescript
+// En App.tsx o main.ts (composición de dependencias)
+const courseRepository = new CoursePostgreSQLRepository();
+const createCourse = CreateCourse(courseRepository);
+
+// En el componente
+await createCourse({ title: '...', description: '...', duration: 3600 });
+```
+
+**Ventajas:**
+* Dependencias explícitas y fáciles de mockear en tests.
+* Separación clara entre configuración (inyección) y ejecución (invocación).
+* Compatible con DI containers si la aplicación crece.
+
+### **¿Por qué usar casos de uso en lugar de servicios genéricos?**
+
+| Aspecto | Casos de Uso | Servicios Genéricos |
+|---------|--------------|---------------------|
+| **Granularidad** | Una acción específica del usuario | Agrupación de operaciones relacionadas |
+| **Claridad** | Nombre explícito (`CreateCourse`, `DeleteCourse`) | Nombres genéricos (`CourseService.create()`) |
+| **Testabilidad** | Tests enfocados en un flujo específico | Tests que cubren múltiples flujos |
+| **Mantenibilidad** | Cambios localizados a una operación | Cambios pueden afectar múltiples operaciones |
+| **Documentación** | El código es autodocumentado | Requiere documentación adicional |
+
+**Casos de uso:**
+* Representan **intenciones del usuario** de forma explícita.
+* Facilitan la aplicación de **CQRS** (separar comandos de consultas).
+* Permiten **evolución independiente** de cada operación.
+
+**Servicios:**
+* Útiles para **funcionalidades transversales** (logging, notificaciones).
+* Pueden **agrupar helpers** que no son casos de uso por sí mismos.
+
+**Conclusión:** Prioriza casos de uso para lógica de negocio y reserva servicios para infraestructura transversal.

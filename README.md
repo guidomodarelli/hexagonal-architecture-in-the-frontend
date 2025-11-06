@@ -246,39 +246,6 @@ Las validaciones deben residir en la capa de **Domain** (preferiblemente en *val
       * Esto permite reutilizar las funciones de validación en la lógica de UI para proporcionar *feedback* inmediato al usuario.
   * **Función de Validación Central:** Se puede definir una función como `ensureCourseIsValid(course)` que agrupa las validaciones individuales del dominio y lanza errores si no se cumplen.
 
-#### FAQs
-
-**¿Para qué sirven `CreateCourseRequest` y `CreateCourseResponse`?**
-`CreateCourseRequest` define la estructura de los datos necesarios para crear un curso, mientras que `CreateCourseResponse` especifica el tipo de respuesta que el caso de uso devolverá. En este caso, `CreateCourseResponse` es `void`, indicando que no se espera ningún valor de retorno al completar la operación.
-
-**¿Por qué no simplemente usar `Course` como request?**
-Usar `Course` directamente como request podría parecer una solución sencilla, pero no es ideal porque `Course` representa una entidad completa que incluye un `id`, el cual generalmente es generado por el sistema (por ejemplo, una base de datos) al momento de crear el curso. Al definir `CreateCourseRequest`, podemos especificar solo los campos necesarios para la creación del curso, evitando confusión y asegurando que el `id` no sea proporcionado por el cliente.
-
-**¿Y qué pasa con `CreateCourseResponse`?**
-En este caso, `CreateCourseResponse` es `void` porque no necesitamos devolver ningún dato específico tras la creación del curso. Sin embargo, en otros casos de uso, podríamos querer devolver información relevante, como el `id` del curso recién creado o un objeto que represente el curso completo. Definir un tipo de respuesta explícito nos permite mantener la flexibilidad para futuros cambios sin afectar la interfaz del caso de uso.
-
-**¿Por qué no usar `Course` como response?**
-Usar `Course` como response podría ser útil si quisiéramos devolver el curso completo tras su creación. Sin embargo, en este caso específico, decidimos que no es necesario devolver el curso completo, ya que la operación de creación no requiere que el cliente reciba esa información. Al definir `CreateCourseResponse` como `void`, dejamos claro que no se espera ningún valor de retorno, lo que simplifica la interfaz del caso de uso. Esto también nos permite cambiar la implementación en el futuro sin afectar a los consumidores del caso de uso.
-
-**¿Por qué CreateCourse es una función y no una clase?**
-Optamos por una función para mantener la simplicidad y claridad del caso de uso. Las funciones son fáciles de entender y utilizar, especialmente para operaciones que no requieren mantener estado interno. Sin embargo, si el caso de uso necesitara gestionar estado o dependencias complejas, podrías considerar usar una función constructora, una clase, o incluso un patrón de inyección de dependencias para manejar esas necesidades.
-
-**¿Y si necesito dependencias en CreateCourse?**
-Si `CreateCourse` requiere dependencias, como un repositorio para guardar el curso, podemos inyectarlas como parámetros de la función. Por ejemplo:
-
-```typescript
-export function CreateCourse(
-  courseRepository: CourseRepository
-): (request: CreateCourseRequest) => Promise<CreateCourseResponse> {
-  return async (request: CreateCourseRequest): Promise<CreateCourseResponse> => {
-    // Implementación del caso de uso utilizando courseRepository
-  };
-}
-```
-
-**¿Por qué se usan casos de uso en lugar de servicios?**
-Los casos de uso representan acciones específicas que un usuario puede realizar en el sistema, encapsulando la lógica de negocio asociada a esas acciones. Esto proporciona una estructura clara y enfocada para la lógica de negocio, facilitando su comprensión y mantenimiento. Los servicios, por otro lado, pueden volverse genéricos y abarcar múltiples responsabilidades, lo que puede complicar la gestión del código. Al utilizar casos de uso, promovemos una arquitectura más modular y orientada a las acciones del usuario. Mientras que los servicios pueden ser útiles para agrupar funcionalidades relacionadas, los casos de uso ofrecen una manera más directa de representar las operaciones del sistema desde la perspectiva del usuario.
-
 #### 🔄 Patrón Repositorio (Puerto)
 
 Para resolver este problema, utilizamos el patrón repositorio.
