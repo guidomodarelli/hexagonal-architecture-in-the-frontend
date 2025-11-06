@@ -1,12 +1,21 @@
-#### Añade validaciones a la creación del curso
+# Añade validaciones a la creación del curso
 
-Tenemos nuestro caso de uso para crear cursos, pero ahora queremos añadir validación para evitar guardar cursos con un formato incorrecto.
+Tenemos nuestro caso de uso para crear cursos, pero necesitamos añadir validaciones para garantizar la integridad de los datos antes de persistirlos.
 
-Por ejemplo, queremos validar que el título del curso tenga un mínimo y un máximo de caracteres. Para ello creamos la validación en la carpeta de dominio.
+Implementaremos validaciones en la capa de **Dominio** siguiendo el principio de que las reglas de negocio deben residir en el dominio, no en la interfaz de usuario. Esto nos permite:
 
-Dentro de `src/modules/courses/domain/value-objects` creamos el archivo `CourseTitle.ts`:
+- Reutilizar las validaciones en diferentes contextos (formularios, APIs, tests)
+- Mantener la lógica de negocio centralizada y consistente
+- Validar tanto en el frontend (feedback inmediato) como en el backend
+
+Por ejemplo, para el título del curso estableceremos restricciones de longitud mínima y máxima de caracteres.
+
+## Value Object: CourseTitle
+
+Creamos un Value Object en la capa de **Dominio** para encapsular la lógica de validación del título del curso.
 
 ```typescript
+// src/modules/courses/domain/value-objects/CourseTitle.ts
 export class CourseTitleNotValidError extends Error {
   constructor(title: string) {
     super(`Course title not valid: ${title}`);
@@ -22,11 +31,12 @@ export const isCourseTitleValid = (title: string): boolean => {
 };
 ```
 
-También podemos crear una función adicional en la capa de dominio para validar el curso completo, lanzando errores si no cumple con los requisitos.
+## Validador de entidad: CourseValidator
 
-Dentro de `src/modules/courses/domain/entities` creamos el archivo `CourseValidator.ts`:
+Creamos un validador en la capa de **Dominio** que verifica todos los atributos del curso de forma centralizada. Esta función lanza errores específicos cuando detecta valores inválidos, permitiendo identificar exactamente qué campo no cumple los requisitos.
 
 ```typescript
+// src/modules/courses/domain/entities/CourseValidator.ts
 import { Course } from './Course';
 import { isCourseIdValid, CourseIdNotValidError } from '../value-objects/CourseId';
 import { isCourseTitleValid, CourseTitleNotValidError } from '../value-objects/CourseTitle';
@@ -46,22 +56,34 @@ export const ensureCourseIsValid = (course: Course): void => {
 };
 ```
 
-Llamaríamos a esta función justo antes de guardar el curso dentro de la función `CreateCourse`.
+Esta función se invoca en el caso de uso `CreateCourse` antes de persistir el curso en el repositorio.
 
-Sin esperar al envío del formulario, queremos proporcionar feedback inmediato mientras el usuario completa los campos; de este modo podemos invocar las funciones de validación individuales y mostrar errores en tiempo real.
+## Validación en tiempo real en el formulario
+
+Para proporcionar feedback inmediato al usuario mientras completa los campos, utilizamos las funciones de validación individuales:
 
 ```typescript
-  import { useEffect } from 'react';
-  import { isCourseTitleValid, MIN_COURSE_TITLE_LENGTH, MAX_COURSE_TITLE_LENGTH } from '../../domain/value-objects/CourseTitle';
-  import { isCourseDurationValid } from '../../domain/value-objects/CourseDuration';
+import { useEffect, useState } from 'react';
+import {
+  isCourseTitleValid,
+  MIN_COURSE_TITLE_LENGTH,
+  MAX_COURSE_TITLE_LENGTH
+} from '../../domain/value-objects/CourseTitle';
+import { isCourseDurationValid } from '../../domain/value-objects/CourseDuration';
 
-  useEffect(() => {
-    const isTitleValid = isCourseTitleValid(formData.title);
-    const isDurationValid = isCourseDurationValid(formData.duration);
+useEffect(() => {
+  const isTitleValid = isCourseTitleValid(formData.title);
+  const isDurationValid = isCourseDurationValid(formData.duration);
 
-    setErrors({
-      title: isTitleValid ? null : `El título debe tener entre ${MIN_COURSE_TITLE_LENGTH} y ${MAX_COURSE_TITLE_LENGTH} caracteres.`,
-      duration: isDurationValid ? null : `La duración debe ser un número positivo.`,
-    });
-  }, [formData]);
+  setErrors({
+    title: isTitleValid
+      ? null
+      : `El título debe tener entre ${MIN_COURSE_TITLE_LENGTH} y ${MAX_COURSE_TITLE_LENGTH} caracteres.`,
+    duration: isDurationValid
+      ? null
+      : 'La duración debe ser un número positivo.',
+  });
+}, [formData]);
 ```
+
+De este modo, el usuario recibe retroalimentación instantánea sobre la validez de los datos mientras escribe, sin necesidad de enviar el formulario. Esto mejora significativamente la experiencia de usuario.
