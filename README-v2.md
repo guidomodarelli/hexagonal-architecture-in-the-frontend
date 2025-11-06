@@ -269,7 +269,53 @@ export interface CourseRepository {
 La capa de **Infrastructure** (el adaptador) es responsable de la **traducción** (mapeo) entre el modelo de persistencia (DTOs externos, filas de DB) y las entidades de **Domain**.
 
   * **Principio:** El dominio no debe ser condicionado por la estructura de los datos externos (APIs, JSON, etc.).
-  * **Ejemplo:** El repositorio debe mapear una `ApiLocation` (con `coords: { lat, lng }`) a la entidad de dominio `Location` (con `latitude`, `longitude`).
+
+##### Ejemplo de Mapeo
+
+**Contexto del ejemplo**
+
+Imaginemos una aplicación que muestra una lista de localizaciones en un mapa. La lógica de renderizado (pintar puntos, zoom, popups, interacción con Google Maps) reside en la **capa de presentación** (componentes React). Por su parte, la **infraestructura** implementa un repositorio que obtiene las localizaciones desde una API externa.
+
+**El problema**
+
+La API externa devuelve los datos con una estructura diferente a la que necesitamos en nuestro dominio. Aquí es donde el repositorio debe actuar como **traductor**.
+
+El repositorio debe mapear una `ApiLocation` (con `coords: { lat, lng }`) a la entidad de dominio `Location` (con `latitude`, `longitude`).
+
+**Estructura de los datos recibidos (vendor externa)**
+
+El repositorio recibe objetos con esta forma:
+
+```ts
+export interface ApiLocation {
+  coords: {
+    lat: number;
+    lng: number;
+  };
+  name: string;
+}
+```
+
+**Estructura de nuestro dominio**
+
+En cambio, dentro de nuestro **dominio** definimos la entidad de la forma que nosotros queremos trabajar:
+
+```ts
+export interface Location {
+  latitude: number;
+  longitude: number;
+  name: string;
+}
+```
+
+**¿Por qué no adaptamos el dominio al vendor externo?**
+
+No deberíamos condicionar nuestro dominio a cómo nos llegan los datos externos.
+
+* **No tenemos control** sobre los servicios externos, y su contrato podría cambiar en cualquier momento.
+* Preferimos definir **nuestro propio lenguaje** y nomenclatura en el dominio, de manera consistente con las reglas del negocio y el equipo de desarrollo.
+
+Por eso, el repositorio en infraestructura se encarga de hacer la **traducción** entre el `ApiLocation` y nuestro `Location`. De esta forma aislamos la aplicación de los cambios en la fuente de datos, y mantenemos un dominio limpio, estable y expresivo.
 
 -----
 

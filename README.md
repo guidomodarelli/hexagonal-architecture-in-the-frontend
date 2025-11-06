@@ -365,13 +365,27 @@ Sin esperar al envío del formulario, queremos proporcionar feedback inmediato m
   }, [formData]);
 ```
 
-### Ejemplo real con arquitectura hexagonal
+-----
 
-Imaginemos una aplicación en la que debemos mostrar una lista de localizaciones sobre un mapa. Toda la lógica relacionada con pintar los puntos y manejar la interacción con Google Maps (plugins, zoom, popups, etc.) vive en la **UI**, dentro de nuestros componentes de React.
+#### 🧩 Mapeo en Infraestructura (Adaptador)
 
-Por otro lado, en la **infraestructura** tenemos un repositorio encargado de obtener esa lista de localizaciones desde una fuente externa. En este ejemplo, la fuente es un **JSON**. Lo importante es que no podemos modificar ni la estructura ni los nombres de los campos que vienen en ese JSON (como ocurriría si la información viniera de un servicio HTTP externo).
+La capa de **Infrastructure** (el adaptador) es responsable de la **traducción** (mapeo) entre el modelo de persistencia (DTOs externos, filas de DB) y las entidades de **Domain**.
 
-#### Estructura de los datos recibidos (API)
+  * **Principio:** El dominio no debe ser condicionado por la estructura de los datos externos (APIs, JSON, etc.).
+
+##### Ejemplo de Mapeo
+
+**Contexto del ejemplo**
+
+Imaginemos una aplicación que muestra una lista de localizaciones en un mapa. La lógica de renderizado (pintar puntos, zoom, popups, interacción con Google Maps) reside en la **capa de presentación** (componentes React). Por su parte, la **infraestructura** implementa un repositorio que obtiene las localizaciones desde una API externa.
+
+**El problema**
+
+La API externa devuelve los datos con una estructura diferente a la que necesitamos en nuestro dominio. Aquí es donde el repositorio debe actuar como **traductor**.
+
+El repositorio debe mapear una `ApiLocation` (con `coords: { lat, lng }`) a la entidad de dominio `Location` (con `latitude`, `longitude`).
+
+**Estructura de los datos recibidos (vendor externa)**
 
 El repositorio recibe objetos con esta forma:
 
@@ -385,7 +399,7 @@ export interface ApiLocation {
 }
 ```
 
-#### Estructura de nuestro dominio
+**Estructura de nuestro dominio**
 
 En cambio, dentro de nuestro **dominio** definimos la entidad de la forma que nosotros queremos trabajar:
 
@@ -397,7 +411,7 @@ export interface Location {
 }
 ```
 
-#### Por qué no adaptamos el dominio al API
+**¿Por qué no adaptamos el dominio al vendor externo?**
 
 No deberíamos condicionar nuestro dominio a cómo nos llegan los datos externos.
 
@@ -406,7 +420,7 @@ No deberíamos condicionar nuestro dominio a cómo nos llegan los datos externos
 
 Por eso, el repositorio en infraestructura se encarga de hacer la **traducción** entre el `ApiLocation` y nuestro `Location`. De esta forma aislamos la aplicación de los cambios en la fuente de datos, y mantenemos un dominio limpio, estable y expresivo.
 
----
+-----
 
 ## Guías ampliadas (DTOs, puertos y adaptadores)
 
