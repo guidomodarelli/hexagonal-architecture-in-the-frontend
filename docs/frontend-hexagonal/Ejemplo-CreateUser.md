@@ -1,4 +1,4 @@
-# Ejemplo completo: CreateUser (frontend hexagonal)
+# Ejemplo completo: CreateUser
 
 Ejemplo realista con módulos, puertos, adaptador (repositorio), DTOs y mappers.
 

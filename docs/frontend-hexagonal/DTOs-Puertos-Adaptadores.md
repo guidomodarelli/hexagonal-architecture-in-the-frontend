@@ -1,4 +1,4 @@
-# DTOs, Puertos y Adaptadores (Frontend Hexagonal)
+# DTOs, Puertos y Adaptadores
 
 Guía práctica para ubicar DTOs, definir puertos y escribir adaptadores en un frontend con arquitectura hexagonal y Screaming Architecture.
 

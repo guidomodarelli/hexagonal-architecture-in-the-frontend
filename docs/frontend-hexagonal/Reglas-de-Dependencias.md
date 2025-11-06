@@ -1,4 +1,4 @@
-# Reglas de Dependencias (Frontend Hexagonal)
+# Reglas de Dependencias
 
 Estas reglas concretan la dirección de dependencias y qué importaciones están permitidas entre capas.
 
