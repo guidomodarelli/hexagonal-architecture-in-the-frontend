@@ -15,7 +15,7 @@ Esta guía complementa `DTOs-Puertos-Adaptadores.md` diferenciando explícitamen
 ### Dónde se define
 - `modules/<x>/application/commands` — **inputs** para casos de uso de escritura (CreateUserInput, UpdateUserInput, DeleteUserInput)
 - `modules/<x>/application/queries` — **inputs** para casos de uso de lectura (GetUserByIdQuery, ListUsersQuery)
-- `modules/<x>/application/results` — **outputs** opcionales cuando la respuesta del caso de uso necesita un formato específico para la UI (UserDetailResult, UserListResult)
+- `modules/<x>/application/results` — **outputs** opcionales cuando la respuesta del caso de uso necesita un formato específico para la UI (UserDetailResult, UserListResult) (**Importante:** Estos NO son DTOs de infraestructura — son contratos internos de aplicación que expresan las necesidades de lectura de la UI sin acoplarse a formatos externos.)
 
 > **Nota sobre combinación:** Un caso de uso puede usar **command/query como input** y **result como output** simultáneamente. Por ejemplo: `createUser(input: CreateUserInput): Promise<UserCreatedResult>` o `listUsers(query: ListUsersQuery): Promise<UserListResult[]>`. No es obligatorio tener las tres carpetas; usá solo lo que tu caso de uso requiera.
 
@@ -56,7 +56,7 @@ export interface CreateUserInput {
 - Para requests y responses "crudos" que requieren mapeo hacia/desde el dominio
 
 ### Dónde se define
-- `modules/<x>/infrastructure/api/dto` (o `.../gateway/dto`)
+- `modules/<x>/infrastructure/api/dto`
 - `modules/<x>/infrastructure/api/dto/mapper.ts` (lógica de conversión)
 
 ### Desde dónde se importa ✅
@@ -73,7 +73,7 @@ export interface CreateUserInput {
 
 ### Por qué se usa
 - Aísla formatos externos cambiantes de tu modelo interno (dominio/aplicación)
-- Permite mapear inconsistencias (snake_case, opcionales, nullables) a entidades/VO estables
+- Permite mapear inconsistencias (snake_case, opcionales, nullables) a entidades/ValueObjects estables
 - Protege el núcleo de cambios en APIs externas
 
 **Ejemplo mínimo:**
@@ -106,7 +106,7 @@ export const toDomain = (dto: UserDto): User => {
 ### Flujo de conversión
 
 ```
-Mundo Externo → DTO Infra → Mapper → Entidad/VO Dominio → Caso de Uso → DTO Aplicación → UI
+Mundo Externo → DTO Infra → Mapper → Entidad/ValueObject Dominio → Caso de Uso → DTO Aplicación → UI
 ```
 
 ### Pregunta de decisión rápida
@@ -116,12 +116,3 @@ Mundo Externo → DTO Infra → Mapper → Entidad/VO Dominio → Caso de Uso �
 
 - **"¿Esto modela el contrato con API/SDK/Storage?"**
   → Infraestructura (`api/dto` + `mapper`)
-
----
-
-## Nota sobre Read Models (Aplicación)
-
-Para consultas (lectura) podés definir **modelos de lectura optimizados para la UI** (p. ej., `UserListItem`) en `application/results` y hacer que el puerto de consulta los devuelva.
-
-**Importante:** Estos NO son DTOs de infraestructura — son contratos internos de aplicación que expresan las necesidades de lectura de la UI sin acoplarse a formatos externos.
-
