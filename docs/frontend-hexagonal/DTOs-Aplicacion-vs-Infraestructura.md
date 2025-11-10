@@ -8,25 +8,34 @@ Esta guía complementa `DTOs-Puertos-Adaptadores.md` diferenciando explícitamen
 
 ## DTOs de Aplicación (Inputs/Outputs de Casos de Uso)
 
-- Cuándo se usa
-  - Como “comando” o “consulta” de un caso de uso: parámetros de entrada; opcionalmente su resultado.
-  - En el límite Presentación ↔ Aplicación (no en el límite con el mundo externo).
-- Dónde se define
-  - `modulos/<x>/aplicacion/comandos` (inputs) y, si lo necesitás, `modulos/<x>/aplicacion/resultados` (outputs).
-  - También podés usar `aplicacion/consultas` para inputs de casos de uso de lectura.
-- Desde dónde se importa
-  - Presentación (Views/Pages/UI) para invocar casos de uso.
-  - Tests de aplicación.
-  - Adaptadores “entrantes” de infraestructura que llamen casos de uso (router, efectos) — permitido porque infra → app está permitido.
-  - Nunca desde dominio. Nunca desde adaptadores “salientes” (repos) para no acoplar el puerto a la forma externa.
-- Para qué se usa
-  - Expresar el contrato interno del caso de uso de forma estable y orientada al negocio/UX.
-  - Validar y modelar requisitos de negocio al nivel de aplicación (p. ej., campos obligatorios mínimamente consistentes antes de llegar a dominio).
-- Por qué se usa
-  - Evita que los formatos externos contaminen la API del caso de uso.
-  - Facilita testabilidad y evolución de la UI sin romper casos de uso.
+### Cuándo se usa
+- Como "comando" o "consulta" de un caso de uso: parámetros de entrada y, opcionalmente, su resultado.
+- En el límite **Presentación ↔ Aplicación** (no en el límite con el mundo externo).
 
-Ejemplo mínimo (entrada de comando):
+### Dónde se define
+- `modulos/<x>/aplicacion/comandos` (inputs)
+- `modulos/<x>/aplicacion/resultados` (outputs, opcional)
+- `modulos/<x>/aplicacion/consultas` (inputs de casos de uso de lectura)
+
+### Desde dónde se importa ✅
+- **Presentación** (Views/Pages/UI) para invocar casos de uso
+- **Tests de aplicación**
+- **Adaptadores entrantes** de infraestructura (router, efectos) — permitido porque `infra → app` está permitido
+
+### Desde dónde NO se importa ❌
+- **Nunca desde dominio** (el dominio no conoce la aplicación)
+- **Nunca desde adaptadores salientes** (repos) para no acoplar el puerto a formatos externos
+
+### Para qué se usa
+- Expresar el contrato interno del caso de uso de forma estable y orientada al negocio/UX
+- Validar y modelar requisitos de negocio al nivel de aplicación (campos obligatorios, consistencia básica antes de llegar a dominio)
+
+### Por qué se usa
+- Evita que los formatos externos contaminen la API del caso de uso
+- Facilita testabilidad y evolución de la UI sin romper casos de uso
+- Proporciona un punto de validación independiente del dominio
+
+**Ejemplo mínimo:**
 
 ```ts
 // modulos/usuarios/aplicacion/comandos/CrearUsuarioInput.ts
@@ -40,21 +49,32 @@ export interface CrearUsuarioInput {
 
 ## DTOs de Infraestructura (Contratos Externos)
 
-- Cuándo se usa
-  - En el límite Infraestructura ↔ Mundo externo: HTTP/GraphQL/SDK/Storage/IndexedDB.
-  - Requests y responses “crudos” y sus mappers hacia/desde el dominio.
-- Dónde se define
-  - `modulos/<x>/infraestructura/api/dto` (o `.../gateway/dto`), más `.../dto/mapper.ts`.
-- Desde dónde se importa
-  - Solo desde infraestructura (api/gateways/adapters/repositorios).
-  - Nunca desde aplicación, dominio o UI.
-- Para qué se usa
-  - Tipar el contrato de red/SDK y centralizar parseo/mapeo y saneamiento.
-- Por qué se usa
-  - Aísla formatos externos cambiantes de tu modelo interno (dominio/aplicación).
-  - Permite mapear inconsistencias (snake_case, opcionales) a entidades/VO estables.
+### Cuándo se usa
+- En el límite **Infraestructura ↔ Mundo externo**: HTTP/GraphQL/SDK/Storage/IndexedDB
+- Para requests y responses "crudos" que requieren mapeo hacia/desde el dominio
 
-Ejemplo mínimo (response externo):
+### Dónde se define
+- `modulos/<x>/infraestructura/api/dto` (o `.../gateway/dto`)
+- `modulos/<x>/infraestructura/api/dto/mapper.ts` (lógica de conversión)
+
+### Desde dónde se importa ✅
+- **Solo desde infraestructura**: api/gateways/adapters/repositorios
+
+### Desde dónde NO se importa ❌
+- **Nunca desde aplicación**
+- **Nunca desde dominio**
+- **Nunca desde UI/Presentación**
+
+### Para qué se usa
+- Tipar el contrato de red/SDK y centralizar parseo/mapeo
+- Saneamiento y validación de datos externos antes de cruzar hacia el núcleo
+
+### Por qué se usa
+- Aísla formatos externos cambiantes de tu modelo interno (dominio/aplicación)
+- Permite mapear inconsistencias (snake_case, opcionales, nullables) a entidades/VO estables
+- Protege el núcleo de cambios en APIs externas
+
+**Ejemplo mínimo:**
 
 ```ts
 // modulos/usuarios/infraestructura/api/dto/UsuarioDto.ts
@@ -63,22 +83,42 @@ export interface UsuarioDto {
   nombre: string;
   email: string;
 }
+
+// modulos/usuarios/infraestructura/api/dto/mapper.ts
+export const toDomain = (dto: UsuarioDto): Usuario => {
+  return new Usuario(dto.id, dto.nombre, dto.email);
+};
 ```
 
 ---
 
-## Reglas prácticas (cheat‑sheet)
+## Reglas Prácticas (Cheat Sheet)
 
-- Presentación importa casos de uso y sus inputs/outputs de aplicación. No importa DTOs de infraestructura.
-- Casos de uso dependen de puertos (interfaces en `aplicacion/puertos`) y del dominio. No conocen DTOs externos.
-- Adaptadores/Repos (infraestructura) implementan puertos y convierten DTOs externos ↔ dominio antes de cruzar el puerto.
-- Dominio no importa nada fuera del dominio.
+| Capa                                 | Puede Importar                   | No Puede Importar                |
+| ------------------------------------ | -------------------------------- | -------------------------------- |
+| **Presentación**                     | Casos de uso, DTOs de aplicación | DTOs de infraestructura          |
+| **Aplicación (Casos de Uso)**        | Puertos (interfaces), Dominio    | DTOs de infraestructura          |
+| **Infraestructura (Adapters/Repos)** | Puertos, Dominio, DTOs de infra  | —                                |
+| **Dominio**                          | Solo otros módulos de dominio    | Cualquier cosa fuera del dominio |
 
-Si dudás:
+### Flujo de conversión
 
-- “¿Esto modela el contrato con la UI/caso de uso?” → Aplicación (`comandos`/`consultas`/`resultados`).
-- “¿Esto modela el contrato con API/SDK/Storage?” → Infraestructura (`api/dto` + `mapper`).
+```
+Mundo Externo → DTO Infra → Mapper → Entidad/VO Dominio → Caso de Uso → DTO Aplicación → UI
+```
 
-### Nota sobre Read Models (aplicación)
+### Pregunta de decisión rápida
 
-Para consultas (lectura) podés definir modelos de lectura optimizados para la UI (p. ej., `UsuarioListItem`) en `aplicacion/resultados` y hacer que el puerto de consulta los devuelva. No son DTOs de infraestructura: son contratos internos de aplicación. Ver `Repositorios-Contratos-y-CQRS.md`.
+- **"¿Esto modela el contrato con la UI/caso de uso?"**
+  → Aplicación (`comandos`/`consultas`/`resultados`)
+
+- **"¿Esto modela el contrato con API/SDK/Storage?"**
+  → Infraestructura (`api/dto` + `mapper`)
+
+---
+
+## Nota sobre Read Models (Aplicación)
+
+Para consultas (lectura) podés definir **modelos de lectura optimizados para la UI** (p. ej., `UsuarioListItem`) en `aplicacion/resultados` y hacer que el puerto de consulta los devuelva.
+
+**Importante:** Estos NO son DTOs de infraestructura — son contratos internos de aplicación que expresan las necesidades de lectura de la UI sin acoplarse a formatos externos.
