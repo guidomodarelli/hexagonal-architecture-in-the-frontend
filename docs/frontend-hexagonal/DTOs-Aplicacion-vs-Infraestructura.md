@@ -2,7 +2,7 @@
 
 Esta guía complementa `DTOs-Puertos-Adaptadores.md` diferenciando explícitamente los DTOs de **aplicación** (inputs/outputs internos de casos de uso) y los DTOs de **infraestructura** (contratos con el exterior).
 
-> Terminología: usamos “DTO de aplicación” para inputs/outputs de casos de uso; y “DTO de infraestructura” para requests/responses de HTTP/SDK/storage.
+> Terminología: usamos "DTO de aplicación" para inputs/outputs de casos de uso; y "DTO de infraestructura" para requests/responses de HTTP/SDK/storage.
 
 ---
 
@@ -13,9 +13,9 @@ Esta guía complementa `DTOs-Puertos-Adaptadores.md` diferenciando explícitamen
 - En el límite **Presentación ↔ Aplicación** (no en el límite con el mundo externo).
 
 ### Dónde se define
-- `modulos/<x>/aplicacion/comandos` (inputs)
-- `modulos/<x>/aplicacion/resultados` (outputs, opcional)
-- `modulos/<x>/aplicacion/consultas` (inputs de casos de uso de lectura)
+- `modules/<x>/application/commands` (inputs)
+- `modules/<x>/application/results` (outputs, opcional)
+- `modules/<x>/application/queries` (inputs de casos de uso de lectura)
 
 ### Desde dónde se importa ✅
 - **Presentación** (Views/Pages/UI) para invocar casos de uso
@@ -38,8 +38,8 @@ Esta guía complementa `DTOs-Puertos-Adaptadores.md` diferenciando explícitamen
 **Ejemplo mínimo:**
 
 ```ts
-// modulos/usuarios/aplicacion/comandos/CrearUsuarioInput.ts
-export interface CrearUsuarioInput {
+// modules/users/application/commands/CreateUserInput.ts
+export interface CreateUserInput {
   nombre: string;
   email: string;
 }
@@ -54,8 +54,8 @@ export interface CrearUsuarioInput {
 - Para requests y responses "crudos" que requieren mapeo hacia/desde el dominio
 
 ### Dónde se define
-- `modulos/<x>/infraestructura/api/dto` (o `.../gateway/dto`)
-- `modulos/<x>/infraestructura/api/dto/mapper.ts` (lógica de conversión)
+- `modules/<x>/infrastructure/api/dto` (o `.../gateway/dto`)
+- `modules/<x>/infrastructure/api/dto/mapper.ts` (lógica de conversión)
 
 ### Desde dónde se importa ✅
 - **Solo desde infraestructura**: api/gateways/adapters/repositorios
@@ -77,16 +77,16 @@ export interface CrearUsuarioInput {
 **Ejemplo mínimo:**
 
 ```ts
-// modulos/usuarios/infraestructura/api/dto/UsuarioDto.ts
-export interface UsuarioDto {
+// modules/users/infrastructure/api/dto/UserDto.ts
+export interface UserDto {
   id: string;
   nombre: string;
   email: string;
 }
 
-// modulos/usuarios/infraestructura/api/dto/mapper.ts
-export const toDomain = (dto: UsuarioDto): Usuario => {
-  return new Usuario(dto.id, dto.nombre, dto.email);
+// modules/users/infrastructure/api/dto/mapper.ts
+export const toDomain = (dto: UserDto): User => {
+  return new User(dto.id, dto.nombre, dto.email);
 };
 ```
 
@@ -110,7 +110,7 @@ Mundo Externo → DTO Infra → Mapper → Entidad/VO Dominio → Caso de Uso �
 ### Pregunta de decisión rápida
 
 - **"¿Esto modela el contrato con la UI/caso de uso?"**
-  → Aplicación (`comandos`/`consultas`/`resultados`)
+  → Aplicación (`commands`/`queries`/`results`)
 
 - **"¿Esto modela el contrato con API/SDK/Storage?"**
   → Infraestructura (`api/dto` + `mapper`)
@@ -119,6 +119,7 @@ Mundo Externo → DTO Infra → Mapper → Entidad/VO Dominio → Caso de Uso �
 
 ## Nota sobre Read Models (Aplicación)
 
-Para consultas (lectura) podés definir **modelos de lectura optimizados para la UI** (p. ej., `UsuarioListItem`) en `aplicacion/resultados` y hacer que el puerto de consulta los devuelva.
+Para consultas (lectura) podés definir **modelos de lectura optimizados para la UI** (p. ej., `UserListItem`) en `application/results` y hacer que el puerto de consulta los devuelva.
 
 **Importante:** Estos NO son DTOs de infraestructura — son contratos internos de aplicación que expresan las necesidades de lectura de la UI sin acoplarse a formatos externos.
+
