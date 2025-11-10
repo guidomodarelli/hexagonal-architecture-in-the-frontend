@@ -13,9 +13,11 @@ Esta guía complementa `DTOs-Puertos-Adaptadores.md` diferenciando explícitamen
 - En el límite **Presentación ↔ Aplicación** (no en el límite con el mundo externo).
 
 ### Dónde se define
-- `modules/<x>/application/commands` (inputs)
-- `modules/<x>/application/results` (outputs, opcional)
-- `modules/<x>/application/queries` (inputs de casos de uso de lectura)
+- `modules/<x>/application/commands` — **inputs** para casos de uso de escritura (CreateUserInput, UpdateUserInput, DeleteUserInput)
+- `modules/<x>/application/queries` — **inputs** para casos de uso de lectura (GetUserByIdQuery, ListUsersQuery)
+- `modules/<x>/application/results` — **outputs** opcionales cuando la respuesta del caso de uso necesita un formato específico para la UI (UserDetailResult, UserListResult)
+
+> **Nota sobre combinación:** Un caso de uso puede usar **command/query como input** y **result como output** simultáneamente. Por ejemplo: `createUser(input: CreateUserInput): Promise<UserCreatedResult>` o `listUsers(query: ListUsersQuery): Promise<UserListResult[]>`. No es obligatorio tener las tres carpetas; usá solo lo que tu caso de uso requiera.
 
 ### Desde dónde se importa ✅
 - **Presentación** (Views/Pages/UI) para invocar casos de uso
