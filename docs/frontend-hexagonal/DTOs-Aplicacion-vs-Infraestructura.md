@@ -29,13 +29,13 @@ Esta guía complementa `DTOs-Puertos-Adaptadores.md` diferenciando explícitamen
 - **Nunca desde adaptadores salientes** (repos) para no acoplar el puerto a formatos externos
 
 ### Para qué se usa
-- Expresar el contrato interno del caso de uso de forma estable y orientada al negocio/UX
-- Validar y modelar requisitos de negocio al nivel de aplicación (campos obligatorios, consistencia básica antes de llegar a dominio)
+- Expresar el contrato interno del **caso de uso** de forma estable y orientada al negocio/UX
+- Validar y modelar requisitos de negocio al **nivel de aplicación** (campos obligatorios, consistencia básica antes de llegar a dominio)
 
 ### Por qué se usa
-- Evita que los formatos externos contaminen la API del caso de uso
-- Facilita testabilidad y evolución de la UI sin romper casos de uso
-- Proporciona un punto de validación independiente del dominio
+- Evita que los formatos externos contaminen la API del **caso de uso**
+- Facilita testabilidad y evolución de la **UI** sin romper casos de uso
+- Proporciona un punto de validación independiente del **dominio**
 
 **Ejemplo mínimo:**
 
@@ -52,7 +52,7 @@ export interface CreateUserInput {
 ## DTOs de Infraestructura (Contratos Externos)
 
 ### Cuándo se usa
-- En el límite **Infraestructura ↔ Mundo externo**: HTTP/GraphQL/SDK/Storage/IndexedDB
+- En el límite **Infraestructura ↔ Mundo externo**: `HTTP`/`GraphQL`/`SDK`/`Storage`/`IndexedDB`
 - Para requests y responses "crudos" que requieren mapeo hacia/desde el dominio
 
 ### Dónde se define
@@ -72,7 +72,7 @@ export interface CreateUserInput {
 - Saneamiento y validación de datos externos antes de cruzar hacia el núcleo
 
 ### Por qué se usa
-- Aísla formatos externos cambiantes de tu modelo interno (dominio/aplicación)
+- Aísla formatos externos cambiantes de tu modelo interno (**dominio**/**aplicación**)
 - Permite mapear inconsistencias (snake_case, opcionales, nullables) a entidades/ValueObjects estables
 - Protege el núcleo de cambios en APIs externas
 
