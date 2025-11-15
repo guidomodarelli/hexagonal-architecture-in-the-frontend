@@ -480,7 +480,7 @@ Por eso, el repositorio en infraestructura se encarga de hacer la **traducción*
 
 Para profundizar en dudas comunes al aplicar esta arquitectura en frontend, hay guías dedicadas:
 
-- Dónde van los DTOs, puertos y adaptadores, con convenciones y anti‑patrones: `docs/frontend-hexagonal/DTOs-Puertos-Adaptadores.md`
+- Dónde van los DTOs, puertos y adaptadores, con convenciones y anti‑patrones: `docs/frontend-hexagonal/DTOs-Ports-Adapters.md`
 - Reglas de dependencias e importaciones permitidas + ejemplo ESLint: `docs/frontend-hexagonal/Reglas-de-Dependencias.md`
 - Ejemplo completo CreateUser (árbol de carpetas y código): `docs/frontend-hexagonal/Ejemplo-CreateUser.md`
  - DTOs de aplicación vs infraestructura (cuándo/desde dónde/por qué): `docs/frontend-hexagonal/DTOs-Aplicacion-vs-Infraestructura.md`

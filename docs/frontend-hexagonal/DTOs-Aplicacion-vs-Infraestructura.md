@@ -1,6 +1,6 @@
 # DTOs en Aplicación vs Infraestructura: cuándo, desde dónde y por qué
 
-Esta guía complementa `DTOs-Puertos-Adaptadores.md` diferenciando explícitamente los DTOs de **aplicación** (inputs/outputs internos de casos de uso) y los DTOs de **infraestructura** (contratos con el exterior).
+Esta guía complementa `DTOs-Ports-Adapters.md` diferenciando explícitamente los DTOs de **aplicación** (inputs/outputs internos de casos de uso) y los DTOs de **infraestructura** (contratos con el exterior).
 
 > Terminología: usamos "DTO de aplicación" para inputs/outputs de casos de uso; y "DTO de infraestructura" para requests/responses de HTTP/SDK/storage.
 
