@@ -65,7 +65,7 @@ Ejemplo: backend devuelve snake_case, campos extra u opcionales. El adaptador ma
 
 En `domain`. Los puertos (interfaces) son parte del lenguaje del `domain` y expresan qué necesita la lógica de negocio para cumplir su trabajo. La implementación concreta se resuelve fuera (`infrastructure`/ composición).
 
-```
+```ts
 // domain/repositories/UserRepository.ts
 export interface UserRepository {
   create(name: string, email: string): Promise<User>;
@@ -126,8 +126,8 @@ infrastructure/repositories/...    # implementa el puerto usando lo anterior
 
 ## Recursos relacionados
 
-- Reglas de importación y ejemplo ESLint: `docs/frontend-hexagonal/Reglas-de-Dependencias.md`
+- Reglas de importación y ejemplo ESLint: `docs/Reglas-de-Dependencias.md`
 - Ejemplo completo CreateUser: `docs/frontend-hexagonal/Ejemplo-CreateUser.md`
 - DTOs de `application` vs `infrastructure` (cuándo/desde dónde/por qué): `docs/frontend-hexagonal/DTOs-Aplicacion-vs-Infraestructura.md`
 - Ejemplo de lectura (GetUsers): `docs/frontend-hexagonal/Ejemplo-GetUsers.md`
-- Repositorios: contratos de retorno y CQRS: `docs/frontend-hexagonal/Repositorios-Contratos-y-CQRS.md`
+- Repositorios: contratos de retorno: `docs/frontend-hexagonal/Repositorios-Contratos-y-Retornos.md`
