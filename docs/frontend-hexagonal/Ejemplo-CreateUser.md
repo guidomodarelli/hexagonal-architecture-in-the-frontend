@@ -8,14 +8,14 @@ Ejemplo realista con módulos, puertos, adaptador (repositorio), DTOs y mappers.
 /modulos/usuarios/
 ├── dominio/
 │   ├── Usuario.ts
-│   └── Email.ts
+│   ├── Email.ts
+│   └── repositorios/
+│       └── RepositorioDeUsuarios.ts
 ├── aplicacion/
 │   ├── casos-uso/
 │   │   └── CrearUsuario.ts
 │   ├── comandos/
 │   │   └── CrearUsuarioInput.ts
-│   └── puertos/
-│       └── RepositorioDeUsuarios.ts
 └── infraestructura/
     ├── api/
     │   ├── crearUsuario.ts
@@ -56,10 +56,10 @@ export class Email {
 }
 ```
 
-### aplicacion/puertos/RepositorioDeUsuarios.ts (Puerto)
+### dominio/repositorios/RepositorioDeUsuarios.ts (Puerto)
 
 ```ts
-import { Usuario } from '../../dominio/Usuario';
+import { Usuario } from '../Usuario';
 
 export interface RepositorioDeUsuarios {
   crear(nombre: string, email: string): Promise<Usuario>;
@@ -78,7 +78,7 @@ export interface CrearUsuarioInput {
 ### aplicacion/casos-uso/CrearUsuario.ts
 
 ```ts
-import { RepositorioDeUsuarios } from '../puertos/RepositorioDeUsuarios';
+import { RepositorioDeUsuarios } from '../../dominio/repositorios/RepositorioDeUsuarios';
 import { Usuario } from '../../dominio/Usuario';
 import { Email } from '../../dominio/Email';
 import { CrearUsuarioInput } from '../comandos/CrearUsuarioInput';
@@ -144,7 +144,7 @@ export async function crearUsuario(dto: CrearUsuarioDto): Promise<UsuarioDto> {
 ### infraestructura/repositorios/RepositorioDeUsuariosFetch.ts (Adaptador)
 
 ```ts
-import { RepositorioDeUsuarios } from '../../aplicacion/puertos/RepositorioDeUsuarios';
+import { RepositorioDeUsuarios } from '../../dominio/repositorios/RepositorioDeUsuarios';
 import { Usuario } from '../../dominio/Usuario';
 import { crearUsuario } from '../api/crearUsuario';
 import { dtoToUsuario } from '../api/dto/mapper';
@@ -189,6 +189,5 @@ export class RepositorioDeUsuariosFetch implements RepositorioDeUsuarios {
 ## Puntos clave
 
 - DTOs (externos) en `infraestructura/api/dto`. Inputs internos de casos de uso en `aplicacion/comandos`.
-- Puerto en `aplicacion/puertos`. Adaptador en `infraestructura/repositorios`.
+- Puerto en `dominio/repositorios`. Adaptador en `infraestructura/repositorios`.
 - Infraestructura puede importar dominio y aplicación. Aplicación y dominio no importan infraestructura.
-

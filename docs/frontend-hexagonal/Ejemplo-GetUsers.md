@@ -8,14 +8,14 @@ Caso de uso de lectura con filtro en aplicación y DTOs externos en infraestruct
 /modulos/usuarios/
 ├── dominio/
 │   ├── Usuario.ts
-│   └── Email.ts
+│   ├── Email.ts
+│   └── repositorios/
+│       └── RepositorioDeUsuarios.ts
 ├── aplicacion/
 │   ├── casos-uso/
 │   │   └── ObtenerUsuarios.ts
 │   ├── consultas/
 │   │   └── FiltroUsuariosInput.ts
-│   └── puertos/
-│       └── RepositorioDeUsuarios.ts
 └── infraestructura/
     ├── api/
     │   ├── getUsuarios.ts
@@ -43,10 +43,10 @@ export class Usuario {
 }
 ```
 
-### aplicacion/puertos/RepositorioDeUsuarios.ts (Puerto extendido)
+### dominio/repositorios/RepositorioDeUsuarios.ts (Puerto extendido)
 
 ```ts
-import { Usuario } from '../../dominio/Usuario';
+import { Usuario } from '../Usuario';
 
 export interface RepositorioDeUsuarios {
   // ya existente en CreateUser:
@@ -70,7 +70,7 @@ export interface FiltroUsuariosInput {
 ### aplicacion/casos-uso/ObtenerUsuarios.ts
 
 ```ts
-import { RepositorioDeUsuarios } from '../puertos/RepositorioDeUsuarios';
+import { RepositorioDeUsuarios } from '../../dominio/repositorios/RepositorioDeUsuarios';
 import { FiltroUsuariosInput } from '../consultas/FiltroUsuariosInput';
 
 export class ObtenerUsuarios {
@@ -138,7 +138,7 @@ export async function getUsuarios(params: { query?: string; page?: number; limit
 ### infraestructura/repositorios/RepositorioDeUsuariosFetch.ts (Adaptador)
 
 ```ts
-import { RepositorioDeUsuarios } from '../../aplicacion/puertos/RepositorioDeUsuarios';
+import { RepositorioDeUsuarios } from '../../dominio/repositorios/RepositorioDeUsuarios';
 import { dtoToUsuario } from '../api/dto/mapper';
 import { getUsuarios } from '../api/getUsuarios';
 
@@ -173,23 +173,23 @@ export async function buscarUsuariosDesdeUI(query: string) {
 - `GetUsersResponseDto` y `UsuarioDto` son DTOs de infraestructura: contrato externo HTTP.
 - El repositorio (adaptador) traduce DTO externo → dominio antes de devolver el resultado al caso de uso.
 
-## Variante con Read Model de Aplicación (CQRS)
+## Variante con Read Model de Dominio (CQRS)
 
-Si tu UI solo necesita una proyección liviana, definí un read model en aplicación y hacé que el puerto de consulta lo devuelva, evitando construir entidades completas:
+Si tu UI solo necesita una proyección liviana, definí un read model en el dominio y hacé que el puerto de consulta lo devuelva, evitando construir entidades completas:
 
 ```ts
-// aplicacion/resultados/UsuarioListItem.ts
+// dominio/proyecciones/UsuarioListItem.ts
 export interface UsuarioListItem { id: string; nombre: string }
 
-// aplicacion/puertos/UsuarioQuery.ts
-import { UsuarioListItem } from '../resultados/UsuarioListItem';
+// dominio/repositorios/UsuarioQuery.ts
+import { UsuarioListItem } from '../proyecciones/UsuarioListItem';
 export interface UsuarioQuery {
   search(params: { q?: string; page?: number; limit?: number }): Promise<{ items: UsuarioListItem[]; total: number }>;
 }
 
 // infraestructura/repositorios/UsuarioQueryFetch.ts
-import { UsuarioQuery } from '../../aplicacion/puertos/UsuarioQuery';
-import { UsuarioListItem } from '../../aplicacion/resultados/UsuarioListItem';
+import { UsuarioQuery } from '../../dominio/repositorios/UsuarioQuery';
+import { UsuarioListItem } from '../../dominio/proyecciones/UsuarioListItem';
 import { getUsuarios } from '../api/getUsuarios';
 
 export class UsuarioQueryFetch implements UsuarioQuery {

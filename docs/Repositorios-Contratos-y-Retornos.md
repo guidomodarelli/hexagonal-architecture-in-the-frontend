@@ -36,7 +36,7 @@ Razón: mantener consistencia usando siempre entidades de dominio simplifica el 
 ## Ejemplo de puerto
 
 ```ts
-// aplicacion/puertos/RepositorioDeUsuarios.ts
+// dominio/repositorios/RepositorioDeUsuarios.ts
 import { Usuario } from '../../dominio/Usuario';
 
 export interface RepositorioDeUsuarios {
@@ -53,7 +53,7 @@ El adaptador importa entidades de dominio, nunca al revés. Mapea DTO externo �
 
 ```ts
 // infraestructura/repositorios/RepositorioDeUsuariosFetch.ts
-import { RepositorioDeUsuarios } from '../../aplicacion/puertos/RepositorioDeUsuarios';
+import { RepositorioDeUsuarios } from '../../dominio/repositorios/RepositorioDeUsuarios';
 import { Usuario } from '../../dominio/Usuario';
 import { getUsuarios } from '../api/getUsuarios';
 

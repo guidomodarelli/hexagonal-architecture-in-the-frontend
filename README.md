@@ -465,5 +465,5 @@ Para profundizar en dudas comunes al aplicar esta arquitectura en frontend, hay 
 
 Resumen de decisiones clave:
 - DTOs externos viven en `infraestructura/api/dto`; la aplicación define sus propios inputs (comandos) y no importa DTOs de infra.
-- Puertos (interfaces) en `aplicacion/puertos`; adaptadores (repositorios concretos) en `infraestructura/`.
+- Puertos (interfaces) en `domain/repositories`; adaptadores (repositorios concretos) en `infraestructura/`.
 - Infraestructura puede importar dominio y aplicación; dominio y aplicación no importan infraestructura.

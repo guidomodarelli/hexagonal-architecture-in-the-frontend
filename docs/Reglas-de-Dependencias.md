@@ -10,7 +10,7 @@ infraestructura  →  aplicacion  →  dominio
 
 - Dominio no importa nada de `aplicacion` ni `infraestructura`.
 - Aplicación importa `dominio`, pero no importa `infraestructura`.
-- Infraestructura puede importar `aplicacion` (para implementar puertos) y `dominio` (para construir entidades/Value Objects).
+- Infraestructura puede importar `aplicacion` (para conectar adaptadores entrantes con casos de uso) y `dominio` (para construir entidades/Value Objects e implementar puertos).
 
 ## Matriz de importaciones
 

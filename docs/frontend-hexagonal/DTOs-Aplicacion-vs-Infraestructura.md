@@ -99,7 +99,7 @@ export const toDomain = (dto: UserDto): User => {
 | Capa                                 | Puede Importar                   | No Puede Importar                |
 | ------------------------------------ | -------------------------------- | -------------------------------- |
 | **Presentación**                     | Casos de uso, DTOs de aplicación | DTOs de infraestructura          |
-| **Aplicación (Casos de Uso)**        | Puertos (interfaces), Dominio    | DTOs de infraestructura          |
+| **Aplicación (Casos de Uso)**        | Puertos del dominio (interfaces), Entidades/VO del dominio | DTOs de infraestructura          |
 | **Infraestructura (Adapters/Repos)** | Puertos, Dominio, DTOs de infra  | —                                |
 | **Dominio**                          | Solo otros módulos de dominio    | Cualquier cosa fuera del dominio |
 

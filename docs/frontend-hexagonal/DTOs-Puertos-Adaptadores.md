@@ -6,7 +6,7 @@ Guía práctica para ubicar DTOs, definir puertos y escribir adaptadores en un f
 
 - Los DTOs representan contratos externos (HTTP/SDK/storage) y viven en `infraestructura`.
 - La aplicación define sus propios contratos internos (inputs/comandos) y NO depende de `infraestructura`.
-- Los puertos (interfaces) viven en `aplicacion`; las implementaciones concretas (adaptadores) viven en `infraestructura`.
+- Los puertos (interfaces) viven en `dominio`; las implementaciones concretas (adaptadores) viven en `infraestructura`.
 - El dominio es puro (entidades/VO/reglas) y no conoce ni aplicación ni infraestructura.
 
 Dirección de dependencias permitida:
@@ -27,11 +27,11 @@ Más detalle en: `docs/Reglas-de-Dependencias.md`.
 /modulos/<nombre>
 ├── dominio/
 │   ├── entidades/
-│   └── value-objects/
+│   ├── value-objects/
+│   └── repositorios/          # interfaces (Repository, Services)
 ├── aplicacion/
 │   ├── casos-uso/
 │   ├── comandos/              # inputs internos de casos de uso
-│   └── puertos/               # interfaces (Repository, Services)
 └── infraestructura/
     ├── api/                   # funciones HTTP/SDK
     │   ├── dto/               # DTOs externos
@@ -43,7 +43,7 @@ Más detalle en: `docs/Reglas-de-Dependencias.md`.
 
 ### Responsabilidades
 
-- `aplicacion/puertos`: interfaces que expresan lo que la app necesita. Ej.: `RepositorioDeUsuarios`.
+- `dominio/repositorios`: interfaces que expresan lo que la app necesita. Ej.: `RepositorioDeUsuarios`.
 - `infraestructura/repositorios`: adaptadores que implementan puertos. Ej.: `RepositorioDeUsuariosFetch`.
 - `infraestructura/api`: funciones que hablan con el exterior (HTTP/SDK). Ej.: `crearUsuario()`.
 - `infraestructura/api/dto`: formas de datos externas. Ej.: `UsuarioDto`, `CrearUsuarioDto`.
@@ -63,10 +63,10 @@ Ejemplo: backend devuelve snake_case, campos extra u opcionales. El adaptador ma
 
 ## ¿Puertos en dominio o aplicación?
 
-En aplicación. Los puertos (interfaces) son el contrato que los casos de uso dependen para cumplir su trabajo. La implementación concreta se resuelve fuera (infraestructura/ composición).
+En dominio. Los puertos (interfaces) son parte del lenguaje del dominio y expresan qué necesita la lógica de negocio para cumplir su trabajo. La implementación concreta se resuelve fuera (infraestructura/ composición).
 
 ```
-// aplicacion/puertos/RepositorioDeUsuarios.ts
+// dominio/repositorios/RepositorioDeUsuarios.ts
 export interface RepositorioDeUsuarios {
   crear(nombre: string, email: string): Promise<Usuario>;
 }
@@ -100,7 +100,7 @@ infraestructura/repositorios/...      # implementa el puerto usando lo anterior
 
 ## Convenciones de nombres
 
-- Puerto: `RepositorioDeUsuarios` (aplicacion/puertos)
+- Puerto: `RepositorioDeUsuarios` (dominio/repositorios)
 - Adaptador: `RepositorioDeUsuariosFetch` (infraestructura/repositorios)
 - DTOs: `UsuarioDto`, `CrearUsuarioDto` (infraestructura/api/dto)
 - Mapper: `dtoToUsuario`, `usuarioToDto` (infraestructura/api/dto/mapper.ts)
