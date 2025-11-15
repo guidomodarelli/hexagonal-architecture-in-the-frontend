@@ -1,193 +1,194 @@
-# Ejemplo completo: CreateUser
+# Complete Example: CreateUser
 
-Ejemplo realista con módulos, puertos, adaptador (repositorio), DTOs y mappers.
+Realistic example with modules, ports, adapters (repository), DTOs and mappers.
 
-## Árbol de carpetas (módulo `usuarios`)
+## Folder tree (module `users`)
 
 ```
-/modulos/usuarios/
-├── dominio/
-│   ├── Usuario.ts
+/modules/users/
+├── domain/
+│   ├── User.ts
 │   ├── Email.ts
-│   └── repositorios/
-│       └── RepositorioDeUsuarios.ts
-├── aplicacion/
-│   ├── casos-uso/
-│   │   └── CrearUsuario.ts
-│   ├── comandos/
-│   │   └── CrearUsuarioInput.ts
-└── infraestructura/
-    ├── api/
-    │   ├── crearUsuario.ts
-    │   └── dto/
-    │       ├── CrearUsuarioDto.ts
-    │       ├── UsuarioDto.ts
-    │       └── mapper.ts
-    └── repositorios/
-        └── RepositorioDeUsuariosFetch.ts
+│   └── repositories/
+│       └── UserRepository.ts
+├── application/
+│   ├── use-cases/
+│   │   └── CreateUser.ts
+│   ├── commands/
+│   │   └── CreateUserInput.ts
+└── infrastructure/
+  ├── api/
+  │   ├── createUser.ts
+  │   └── dto/
+  │       ├── CreateUserDto.ts
+  │       ├── UserDto.ts
+  │       └── mapper.ts
+  └── repositories/
+    └── UserRepositoryFetch.ts
 ```
 
-## Código
+## Code
 
-### dominio/Usuario.ts
+### domain/User.ts
 
 ```ts
 import { Email } from './Email';
 
-export class Usuario {
+export class User {
   constructor(
-    public readonly id: string,
-    public readonly nombre: string,
-    public readonly email: Email,
+  public readonly id: string,
+  public readonly name: string,
+  public readonly email: Email,
   ) {}
 }
 ```
 
-### dominio/Email.ts
+### domain/Email.ts
 
 ```ts
 export class Email {
-  constructor(private readonly valor: string) {
-    if (!valor.includes('@')) throw new Error('Email inválido');
+  constructor(private readonly value: string) {
+  if (!value.includes('@')) throw new Error('Invalid email');
   }
   get value(): string {
-    return this.valor;
+  return this.value;
   }
 }
 ```
 
-### dominio/repositorios/RepositorioDeUsuarios.ts (Puerto)
+### domain/repositories/UserRepository.ts (Port)
 
 ```ts
-import { Usuario } from '../Usuario';
+import { User } from '../User';
 
-export interface RepositorioDeUsuarios {
-  crear(nombre: string, email: string): Promise<Usuario>;
+export interface UserRepository {
+  create(name: string, email: string): Promise<User>;
 }
 ```
 
-### aplicacion/comandos/CrearUsuarioInput.ts
+### application/commands/CreateUserInput.ts
 
 ```ts
-export interface CrearUsuarioInput {
-  nombre: string;
+export interface CreateUserInput {
+  name: string;
   email: string;
 }
 ```
 
-### aplicacion/casos-uso/CrearUsuario.ts
+### application/use-cases/CreateUser.ts
 
 ```ts
-import { RepositorioDeUsuarios } from '../../dominio/repositorios/RepositorioDeUsuarios';
-import { Usuario } from '../../dominio/Usuario';
-import { Email } from '../../dominio/Email';
-import { CrearUsuarioInput } from '../comandos/CrearUsuarioInput';
+import { UserRepository } from '../../domain/repositories/UserRepository';
+import { User } from '../../domain/User';
+import { Email } from '../../domain/Email';
+import { CreateUserInput } from '../commands/CreateUserInput';
 
-export class CrearUsuario {
-  constructor(private readonly repo: RepositorioDeUsuarios) {}
+export class CreateUser {
+  constructor(private readonly repo: UserRepository) {}
 
-  async ejecutar(input: CrearUsuarioInput): Promise<Usuario> {
-    const emailVO = new Email(input.email);
-    return this.repo.crear(input.nombre, emailVO.value);
+  async execute(input: CreateUserInput): Promise<User> {
+  const emailVO = new Email(input.email);
+  return this.repo.create(input.name, emailVO.value);
   }
 }
 ```
 
-### infraestructura/api/dto/CrearUsuarioDto.ts
+### infrastructure/api/dto/CreateUserDto.ts
 
 ```ts
-export interface CrearUsuarioDto {
-  nombre: string;
+export interface CreateUserDto {
+  name: string;
   email: string;
 }
 ```
 
-### infraestructura/api/dto/UsuarioDto.ts
+### infrastructure/api/dto/UserDto.ts
 
 ```ts
-export interface UsuarioDto {
+export interface UserDto {
   id: string;
-  nombre: string;
+  name: string;
   email: string;
 }
 ```
 
-### infraestructura/api/dto/mapper.ts
+### infrastructure/api/dto/mapper.ts
 
 ```ts
-import { UsuarioDto } from './UsuarioDto';
-import { Usuario } from '../../../dominio/Usuario';
-import { Email } from '../../../dominio/Email';
+import { UserDto } from './UserDto';
+import { User } from '../../../domain/User';
+import { Email } from '../../../domain/Email';
 
-export function dtoToUsuario(dto: UsuarioDto): Usuario {
-  return new Usuario(dto.id, dto.nombre, new Email(dto.email));
+export function dtoToUser(dto: UserDto): User {
+  return new User(dto.id, dto.name, new Email(dto.email));
 }
 ```
 
-### infraestructura/api/crearUsuario.ts
+### infrastructure/api/createUser.ts
 
 ```ts
-import { CrearUsuarioDto } from './dto/CrearUsuarioDto';
-import { UsuarioDto } from './dto/UsuarioDto';
+import { CreateUserDto } from './dto/CreateUserDto';
+import { UserDto } from './dto/UserDto';
 
-export async function crearUsuario(dto: CrearUsuarioDto): Promise<UsuarioDto> {
-  const res = await fetch('/api/usuarios', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(dto),
+export async function createUser(dto: CreateUserDto): Promise<UserDto> {
+  const res = await fetch('/api/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(dto),
   });
-  if (!res.ok) throw new Error('No se pudo crear el usuario');
+  if (!res.ok) throw new Error('Could not create user');
   return res.json();
 }
 ```
 
-### infraestructura/repositorios/RepositorioDeUsuariosFetch.ts (Adaptador)
+### infrastructure/repositories/UserRepositoryFetch.ts (Adapter)
 
 ```ts
-import { RepositorioDeUsuarios } from '../../dominio/repositorios/RepositorioDeUsuarios';
-import { Usuario } from '../../dominio/Usuario';
-import { crearUsuario } from '../api/crearUsuario';
-import { dtoToUsuario } from '../api/dto/mapper';
+import { UserRepository } from '../../domain/repositories/UserRepository';
+import { User } from '../../domain/User';
+import { createUser } from '../api/createUser';
+import { dtoToUser } from '../api/dto/mapper';
 
-export class RepositorioDeUsuariosFetch implements RepositorioDeUsuarios {
-  async crear(nombre: string, email: string): Promise<Usuario> {
-    const usuarioDto = await crearUsuario({ nombre, email });
-    return dtoToUsuario(usuarioDto);
+export class UserRepositoryFetch implements UserRepository {
+  async create(name: string, email: string): Promise<User> {
+  const userDto = await createUser({ name, email });
+  return dtoToUser(userDto);
   }
 }
 ```
 
-### Uso desde la UI (ejemplo)
+### Usage from UI (example)
 
 ```ts
-import { CrearUsuario } from '@/modulos/usuarios/aplicacion/casos-uso/CrearUsuario';
-import { RepositorioDeUsuariosFetch } from '@/modulos/usuarios/infraestructura/repositorios/RepositorioDeUsuariosFetch';
+import { CreateUser } from '@/modules/users/application/use-cases/CreateUser';
+import { UserRepositoryFetch } from '@/modules/users/infrastructure/repositories/UserRepositoryFetch';
 
-export async function crearUsuarioDesdeUI(nombre: string, email: string) {
-  const repo = new RepositorioDeUsuariosFetch();
-  const caso = new CrearUsuario(repo);
-  const usuario = await caso.ejecutar({ nombre, email });
-  return usuario;
+export async function createUserFromUI(name: string, email: string) {
+  const repo = new UserRepositoryFetch();
+  const useCase = new CreateUser(repo);
+  const user = await useCase.execute({ name, email });
+  return user;
 }
 ```
 
-## Variante minimalista (sin `api/` separado)
+## Minimalist variant (without separate `api/`)
 
-Mover la llamada `fetch` directamente al repo es válido si no necesitás reutilizarla ni testearla aparte.
+Moving the `fetch` call directly into the repo is valid if you don't need to reuse or test it separately.
 
 ```ts
-export class RepositorioDeUsuariosFetch implements RepositorioDeUsuarios {
-  async crear(nombre: string, email: string): Promise<Usuario> {
-    const res = await fetch('/api/usuarios', { method: 'POST', body: JSON.stringify({ nombre, email }) });
-    if (!res.ok) throw new Error('No se pudo crear el usuario');
-    const dto = await res.json();
-    return dtoToUsuario(dto);
+export class UserRepositoryFetch implements UserRepository {
+  async create(name: string, email: string): Promise<User> {
+  const res = await fetch('/api/users', { method: 'POST', body: JSON.stringify({ name, email }) });
+  if (!res.ok) throw new Error('Could not create user');
+  const dto = await res.json();
+  return dtoToUser(dto);
   }
 }
 ```
 
-## Puntos clave
+## Key points
 
-- DTOs (externos) en `infraestructura/api/dto`. Inputs internos de casos de uso en `aplicacion/comandos`.
-- Puerto en `dominio/repositorios`. Adaptador en `infraestructura/repositorios`.
-- Infraestructura puede importar dominio y aplicación. Aplicación y dominio no importan infraestructura.
+- DTOs (external) in `infrastructure/api/dto`. Internal use case inputs in `application/commands`.
+- Port in `domain/repositories`. Adapter in `infrastructure/repositories`.
+- infrastructure can import domain and application. Application and domain don't import infrastructure.
+
