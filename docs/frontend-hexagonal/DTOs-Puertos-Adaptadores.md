@@ -17,7 +17,7 @@ infraestructura  →  aplicacion  →  dominio
 
 Nunca: `aplicacion → infraestructura` ni `dominio → (aplicacion|infraestructura)`.
 
-Más detalle en: `docs/frontend-hexagonal/Reglas-de-Dependencias.md`.
+Más detalle en: `docs/Reglas-de-Dependencias.md`.
 
 ---
 
