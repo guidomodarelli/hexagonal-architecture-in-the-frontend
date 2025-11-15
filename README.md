@@ -17,6 +17,18 @@ La Infraestructura dice:
 
 ---
 
+## ✔ Flujo completo (para que lo tengas visual)
+
+```
+Infraestructura (controller/http/json)
+          ↓ (transforma)
+Aplicación (DTO input)
+          ↓ (transforma)
+Dominio (Entidad/ValueObject)
+```
+
+---
+
 ## 🧩 Capas Principales
 
 ### **1️⃣ Dominio (Domain)**
