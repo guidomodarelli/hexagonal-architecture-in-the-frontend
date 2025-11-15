@@ -97,6 +97,28 @@ Contexto: consultamos un índice en OpenSearch vía HTTP. A veces el backend res
 - Si el 403 refleja una **regla de negocio** ("este usuario no puede buscar en ese índice"), el **caso de uso** debe lanzar un error de dominio.
 - Si el 403 refleja un **problema técnico** (roles/credenciales del sistema mal configurados), es un **error del adaptador** (infraestructura) que el puerto expone como `SearchRepositoryPermissionError`.
 
+**¿Cómo te das cuenta de la diferencia?**
+
+1. **Timing**: ¿Cuándo sabés que el usuario no tiene permiso?
+  - **Antes de llamar al backend** → Es regla de negocio. Chequeás roles/permisos del usuario en el `AuthorizationPolicy` y lanzás `UserNotAuthorizedToSearchError`.
+  - **Después de que el backend responde 403** → Es error técnico. Las credenciales del sistema están mal o el backend tiene una configuración incorrecta.
+
+2. **Responsabilidad**: ¿Quién decide el permiso?
+  - **Tu aplicación** (caso de uso + policy) → Dominio/negocio.
+  - **El proveedor externo** (OpenSearch, API de terceros) → Infraestructura/técnico.
+
+3. **Solución**: ¿Cómo se arregla?
+  - **Negocio**: El usuario necesita más permisos (cambio de rol, autorización).
+  - **Técnico**: DevOps/Admin debe reconfigurar credenciales del sistema, roles en OpenSearch, tokens, etc.
+
+4. **Código**: ¿Dónde ocurre?
+  - **Negocio**: Validación en el `UseCase` antes de `repo.search()`.
+  - **Técnico**: Captura del status HTTP 403 dentro del adaptador (`OpenSearchSearchRepository`).
+
+**Ejemplo práctico:**
+- Usuario común intenta buscar en índice "confidencial" → `AuthorizationPolicy.canSearchIndex()` retorna `false` → Caso de uso lanza `UserNotAuthorizedToSearchError` (403 en API).
+- Sistema intenta buscar con token válido pero OpenSearch responde 403 porque el rol del service account no tiene acceso → Adaptador captura y lanza `SearchRepositoryPermissionError` (503 en API para indicar problema del sistema).
+
 ### Tipos y puertos
 
 ```ts
