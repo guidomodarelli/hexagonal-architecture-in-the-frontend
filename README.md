@@ -4,6 +4,19 @@ La **Arquitectura Hexagonal** (también conocida como *Ports and Adapters*) busc
 
 ---
 
+## 🧠 Metáfora útil
+
+El Dominio dice:
+“Para hacer mi trabajo, necesito que alguien me dé X. Acá está la interfaz de cómo deben dármelo.”
+
+La Aplicación dice:
+“Ok, voy a coordinar esta operación usando esas interfaces.”
+
+La Infraestructura dice:
+“Yo implemento esa interfaz usando una BD, un API, un archivo o lo que sea.”
+
+---
+
 ## 🧩 Capas Principales
 
 ### **1️⃣ Dominio (Domain)**
