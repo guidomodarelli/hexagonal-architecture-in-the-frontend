@@ -144,7 +144,7 @@ import { getUsers } from '../api/getUsers';
 
 export class UserRepositoryFetch implements UserRepository {
   async create(name: string, email: string) {
-  throw new Error('Not implemented here (see CreateUser example)');
+    // Not implemented here (see CreateUser example)
   }
 
   async search(params: { query?: string; page?: number; limit?: number }) {
