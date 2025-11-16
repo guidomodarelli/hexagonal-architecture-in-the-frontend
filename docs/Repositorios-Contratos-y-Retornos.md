@@ -76,4 +76,4 @@ export class RepositorioDeUsuariosFetch implements RepositorioDeUsuarios {
 
 - DTOs de aplicación vs infraestructura: `docs/frontend-hexagonal/DTOs-Aplicacion-vs-Infraestructura.md`
 - Guía general de DTOs/puertos/adaptadores: `docs/frontend-hexagonal/DTOs-Ports-Adapters.md`
-- Ejemplos: `docs/frontend-hexagonal/Ejemplo-CreateUser.md` y `docs/frontend-hexagonal/Ejemplo-GetUsers.md`.
+- Ejemplos: `docs/frontend-hexagonal/examples/CreateUser.md` y `docs/frontend-hexagonal/examples/GetUsers.md`.

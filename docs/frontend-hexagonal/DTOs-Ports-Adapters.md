@@ -132,7 +132,7 @@ infrastructure/repositories/...    # implementa el puerto usando lo anterior
 ## Recursos relacionados
 
 - Reglas de importación y ejemplo ESLint: `docs/Reglas-de-Dependencias.md`
-- Ejemplo completo CreateUser: `docs/frontend-hexagonal/Ejemplo-CreateUser.md`
+- Ejemplo completo CreateUser: `docs/frontend-hexagonal/examples/CreateUser.md`
 - DTOs de `application` vs `infrastructure` (cuándo/desde dónde/por qué): `docs/frontend-hexagonal/DTOs-Aplicacion-vs-Infraestructura.md`
-- Ejemplo de lectura (GetUsers): `docs/frontend-hexagonal/Ejemplo-GetUsers.md`
+- Ejemplo de lectura (GetUsers): `docs/frontend-hexagonal/examples/GetUsers.md`
 - Repositorios: contratos de retorno: `docs/frontend-hexagonal/Repositorios-Contratos-y-Retornos.md`
