@@ -293,6 +293,10 @@ src/
           CourseList.tsx, CourseForm.tsx
         pages/
           CoursesPage.tsx (Páginas / Views)
+
+#### Infraestructura con múltiples implementaciones
+
+Cada módulo puede requerir varias implementaciones concretas para un mismo puerto (HTTP, persistence, message brokers, email, etc.). Organiza esas implementaciones dentro de `infrastructure/<tipo>` creando una carpeta por tecnología (`Axios/`, `Fetch/`, `PostgreSQL/`, `Kafka/`, …). Cada carpeta encapsula configuraciones, clientes e implementaciones de repositorios, mientras que los DTOs externos y su `mapper` permanecen en `infrastructure/api/dto`. Consulta `docs/frontend-hexagonal/Organizacion-Infraestructura-Implementaciones.md` para ver estructuras sugeridas y ejemplos de Axios vs Fetch, PostgreSQL vs MySQL, RabbitMQ vs Kafka, y adaptadores de email.
 ```
 
 ### 📂 Resumen rápido (qué hace cada carpeta)

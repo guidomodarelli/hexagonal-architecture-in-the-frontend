@@ -2,11 +2,18 @@
 
 Esta guía complementa `DTOs-Ports-Adapters.md` diferenciando explícitamente los DTOs de **aplicación** (inputs/outputs internos de casos de uso) y los DTOs de **infraestructura** (contratos con el exterior).
 
-> Terminología: usamos "DTO de aplicación" para inputs/outputs de casos de uso; y "DTO de infraestructura" para requests/responses de HTTP/SDK/storage.
+> Terminología: usamos "DTO interno" o "DTO de aplicación" para inputs/outputs de casos de uso dentro del hexágono; y "DTO externo" o "DTO de infraestructura" para requests/responses de HTTP/SDK/storage, filas de base de datos, SDKs de terceros, etc.
+
+La clave no es tanto **entrada vs salida**, sino **adentro vs afuera** de tu hexágono:
+
+- DTO interno (aplicación/domino) → contrato estable definido por tu negocio.
+- DTO externo (infraestructura) → contrato variable definido por APIs/DB/clientes.
+
+Idealmente, un cambio en la infraestructura (pasar de REST a gRPC, de Axios a Fetch, de PostgreSQL a Mongo, de una API externa a otra) no debería obligarte a cambiar tus DTO internos, solo los externos y sus mapeos.
 
 ---
 
-## DTOs de Aplicación (Inputs/Outputs de Casos de Uso)
+## DTOs de Aplicación (DTOs internos: Inputs/Outputs de Casos de Uso)
 
 ### Cuándo se usa
 - Como "comando" o "consulta" de un caso de uso: parámetros de entrada y, opcionalmente, su resultado.
@@ -29,13 +36,14 @@ Esta guía complementa `DTOs-Ports-Adapters.md` diferenciando explícitamente lo
 - **Nunca desde adaptadores salientes** (repos) para no acoplar el puerto a formatos externos
 
 ### Para qué se usa
-- Expresar el contrato interno del **caso de uso** de forma estable y orientada al negocio/UX
-- Validar y modelar requisitos de negocio al **nivel de aplicación** (campos obligatorios, consistencia básica antes de llegar a dominio)
+- Expresar el contrato interno del **caso de uso** de forma estable y orientada al negocio/UX.
+- Servir como **DTO interno estable**: solo cambia cuando cambia la regla de negocio, no cuando cambian APIs externas, DB o formatos de transporte.
+- Validar y modelar requisitos de negocio al **nivel de aplicación** (campos obligatorios, consistencia básica antes de llegar a dominio).
 
 ### Por qué se usa
-- Evita que los formatos externos contaminen la API del **caso de uso**
-- Facilita testabilidad y evolución de la **UI** sin romper casos de uso
-- Proporciona un punto de validación independiente del **dominio**
+- Evita que los formatos externos contaminen la API del **caso de uso**.
+- Facilita testabilidad y evolución de la **UI** sin romper casos de uso.
+- Proporciona un punto de validación independiente del **dominio**.
 
 **Ejemplo mínimo:**
 
@@ -49,7 +57,7 @@ export interface CreateUserInput {
 
 ---
 
-## DTOs de Infraestructura (Contratos Externos)
+## DTOs de Infraestructura (DTOs externos: Contratos Externos)
 
 ### Cuándo se usa
 - En el límite **Infraestructura ↔ Mundo externo**: `HTTP`/`GraphQL`/`SDK`/`Storage`/`IndexedDB`
@@ -68,13 +76,14 @@ export interface CreateUserInput {
 - **Nunca desde UI/Presentación**
 
 ### Para qué se usa
-- Tipar el contrato de red/SDK y centralizar parseo/mapeo
-- Saneamiento y validación de datos externos antes de cruzar hacia el núcleo
+- Tipar el contrato de red/SDK y centralizar parseo/mapeo.
+- Servir como **DTO externo variable**: cambia cuando cambia la API externa, el esquema de la base de datos o el contrato HTTP con clientes.
+- Saneamiento y validación de datos externos antes de cruzar hacia el núcleo.
 
 ### Por qué se usa
-- Aísla formatos externos cambiantes de tu modelo interno (**dominio**/**aplicación**)
-- Permite mapear inconsistencias (snake_case, opcionales, nullables) a entidades/ValueObjects estables
-- Protege el núcleo de cambios en APIs externas
+- Aísla formatos externos cambiantes de tu modelo interno (**dominio**/**aplicación**).
+- Permite mapear inconsistencias (snake_case, opcionales, nullables) a entidades/ValueObjects estables.
+- Protege el núcleo de cambios en APIs externas.
 
 **Ejemplo mínimo:**
 
@@ -106,13 +115,13 @@ export const toDomain = (dto: UserDto): User => {
 ### Flujo de conversión
 
 ```
-Mundo Externo → DTO Infra → Mapper → Entidad/ValueObject Dominio → Caso de Uso → DTO Aplicación → UI
+Mundo Externo → DTO externo (Infra) → Mapper → Entidad/ValueObject Dominio → Caso de Uso → DTO interno (App) → UI
 ```
 
 ### Pregunta de decisión rápida
 
-- **"¿Esto modela el contrato con la UI/caso de uso?"**
-  → Aplicación (`commands`/`queries`/`results`)
+- **"¿Esto modela el contrato con la UI/caso de uso, y quiero que sea estable frente a cambios de infraestructura?"**  
+  → Aplicación (`commands`/`queries`/`results`) → DTO interno.
 
-- **"¿Esto modela el contrato con API/SDK/Storage?"**
-  → Infraestructura (`api/dto` + `mapper`)
+- **"¿Esto modela el contrato con API/SDK/Storage y puede cambiar si cambia el mundo exterior?"**  
+  → Infraestructura (`api/dto` + `mapper`) → DTO externo.

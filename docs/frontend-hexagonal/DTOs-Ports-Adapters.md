@@ -4,10 +4,15 @@ Guía práctica para ubicar DTOs, definir puertos y escribir adaptadores en un f
 
 ## Regla de oro
 
-- Los DTOs representan contratos externos (HTTP/SDK/storage) y viven en la capa `infrastructure`.
-- La aplicación define sus propios contratos internos (inputs/comandos) y NO depende de `infrastructure`.
+- Los DTOs **externos** representan contratos con el mundo exterior (HTTP/SDK/storage, filas de DB, etc.) y viven en la capa `infrastructure`.
+- La aplicación define sus propios contratos **internos** (inputs/comandos/resultados de casos de uso) y NO depende de `infrastructure`.
 - Los puertos (interfaces) viven en `domain`; las implementaciones concretas (adaptadores) viven en `infrastructure`.
 - La capa `domain` es pura (entities/VO/rules) y no conoce ni `application` ni `infrastructure`.
+
+La clave no es tanto **DTO de entrada vs DTO de salida**, sino **DTO interno vs DTO externo**:
+
+- DTO interno (aplicación/dominio) → contrato estable, definido por tu negocio/casos de uso.
+- DTO externo (infraestructura) → contrato variable, definido por APIs/DB/clientes.
 
 Dirección de dependencias permitida:
 
@@ -34,7 +39,7 @@ Más detalle en: `docs/Reglas-de-Dependencias.md`.
 │   ├── commands/              # inputs internos de casos de uso
 └── infrastructure/
     ├── api/                   # funciones HTTP/SDK
-    │   ├── dto/               # DTOs externos
+    │   ├── dto/               # DTOs externos (contratos con el mundo de afuera)
     │   └── ...
     ├── adapters/ o repositories/
     │   └── ...                # implementaciones de puertos
@@ -46,9 +51,9 @@ Más detalle en: `docs/Reglas-de-Dependencias.md`.
 - `domain/repositories`: interfaces que expresan lo que la app necesita. Ej.: `UserRepository`.
 - `infrastructure/repositories`: adaptadores que implementan puertos. Ej.: `UserRepositoryFetch`.
 - `infrastructure/api`: funciones que hablan con el exterior (HTTP/SDK). Ej.: `createUser()`.
-- `infrastructure/api/dto`: formas de datos externas. Ej.: `UserDto`, `CreateUserDto`.
+- `infrastructure/api/dto`: formas de datos **externas**. Ej.: `UserDto`, `CreateUserDto`.
 - `infrastructure/api/dto/mapper.ts`: transforma DTO ↔ entidades del `domain`.
-- `application/commands`: inputs internos para casos de uso. Ej.: `CreateUserInput`.
+- `application/commands`: inputs internos para casos de uso (DTOs internos). Ej.: `CreateUserInput`.
 - `domain`: entidades/VO/reglas puras. Ej.: `User`, `Email`.
 
 ---
