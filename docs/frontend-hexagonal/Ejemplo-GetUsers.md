@@ -1,203 +1,204 @@
-# Ejemplo de consulta: GetUsers (lectura)
+# GetUsers Query Example (Read Operation)
 
-Caso de uso de lectura con filtro en aplicación y DTOs externos en infraestructura.
+Read use case with application-level filtering and external DTOs in infrastructure.
 
-## Árbol de carpetas (módulo `usuarios`)
+## Folder Structure (`users` Module)
 
 ```
-/modulos/usuarios/
-├── dominio/
-│   ├── Usuario.ts
+/modules/users/
+├── domain/
+│   ├── User.ts
 │   ├── Email.ts
-│   └── repositorios/
-│       └── RepositorioDeUsuarios.ts
-├── aplicacion/
-│   ├── casos-uso/
-│   │   └── ObtenerUsuarios.ts
-│   ├── consultas/
-│   │   └── FiltroUsuariosInput.ts
-└── infraestructura/
-    ├── api/
-    │   ├── getUsuarios.ts
-    │   └── dto/
-    │       ├── UsuarioDto.ts
-    │       ├── GetUsersResponseDto.ts
-    │       └── mapper.ts
-    └── repositorios/
-        └── RepositorioDeUsuariosFetch.ts
+│   └── repositories/
+│       └── UserRepository.ts
+├── application/
+│   ├── use-cases/
+│   │   └── GetUsers.ts
+│   ├── queries/
+│   │   └── UserFilterInput.ts
+└── infrastructure/
+  ├── api/
+  │   ├── getUsers.ts
+  │   └── dto/
+  │       ├── UserDto.ts
+  │       ├── GetUsersResponseDto.ts
+  │       └── mapper.ts
+  └── repositories/
+    └── UserRepositoryFetch.ts
 ```
 
-## Código
+## Code
 
-### dominio/Usuario.ts (reutilizable con CreateUser)
+### domain/User.ts (Reusable with CreateUser)
 
 ```ts
 import { Email } from './Email';
 
-export class Usuario {
+export class User {
   constructor(
-    public readonly id: string,
-    public readonly nombre: string,
-    public readonly email: Email,
+  public readonly id: string,
+  public readonly name: string,
+  public readonly email: Email,
   ) {}
 }
 ```
 
-### dominio/repositorios/RepositorioDeUsuarios.ts (Puerto extendido)
+### domain/repositories/UserRepository.ts (Extended Port)
 
 ```ts
-import { Usuario } from '../Usuario';
+import { User } from '../User';
 
-export interface RepositorioDeUsuarios {
-  // ya existente en CreateUser:
-  crear(nombre: string, email: string): Promise<Usuario>;
+export interface UserRepository {
+  // already exists in CreateUser:
+  create(name: string, email: string): Promise<User>;
 
-  // búsqueda/paginación simple:
-  buscar(params: { query?: string; page?: number; limit?: number }): Promise<{ items: Usuario[]; total: number }>; 
+  // simple search/pagination:
+  search(params: { query?: string; page?: number; limit?: number }): Promise<{ items: User[]; total: number }>;
 }
 ```
 
-### aplicacion/consultas/FiltroUsuariosInput.ts
+### application/queries/UserFilterInput.ts
 
 ```ts
-export interface FiltroUsuariosInput {
+export interface UserFilterInput {
   query?: string;
   page?: number;  // 1-based
-  limit?: number; // cantidad por página
+  limit?: number; // items per page
 }
 ```
 
-### aplicacion/casos-uso/ObtenerUsuarios.ts
+### application/use-cases/GetUsers.ts
 
 ```ts
-import { RepositorioDeUsuarios } from '../../dominio/repositorios/RepositorioDeUsuarios';
-import { FiltroUsuariosInput } from '../consultas/FiltroUsuariosInput';
+import { UserRepository } from '../../domain/repositories/UserRepository';
+import { UserFilterInput } from '../queries/UserFilterInput';
 
-export class ObtenerUsuarios {
-  constructor(private readonly repo: RepositorioDeUsuarios) {}
+export class GetUsers {
+  constructor(private readonly repo: UserRepository) {}
 
-  async ejecutar(input: FiltroUsuariosInput): Promise<{ items: any[]; total: number }> {
-    const page = input.page ?? 1;
-    const limit = input.limit ?? 20;
-    const query = input.query?.trim() || undefined;
-    return this.repo.buscar({ query, page, limit });
+  async execute(input: UserFilterInput): Promise<{ items: any[]; total: number }> {
+  const page = input.page ?? 1;
+  const limit = input.limit ?? 20;
+  const query = input.query?.trim() || undefined;
+  return this.repo.search({ query, page, limit });
   }
 }
 ```
 
-### infraestructura/api/dto/UsuarioDto.ts
+### infrastructure/api/dto/UserDto.ts
 
 ```ts
-export interface UsuarioDto {
+export interface UserDto {
   id: string;
-  nombre: string;
+  name: string;
   email: string;
 }
 ```
 
-### infraestructura/api/dto/GetUsersResponseDto.ts
+### infrastructure/api/dto/GetUsersResponseDto.ts
 
 ```ts
-import { UsuarioDto } from './UsuarioDto';
+import { UserDto } from './UserDto';
 
 export interface GetUsersResponseDto {
-  items: UsuarioDto[];
+  items: UserDto[];
   total: number;
 }
 ```
 
-### infraestructura/api/dto/mapper.ts
+### infrastructure/api/dto/mapper.ts
 
 ```ts
-import { Usuario } from '../../../dominio/Usuario';
-import { Email } from '../../../dominio/Email';
-import { UsuarioDto } from './UsuarioDto';
+import { User } from '../../../domain/User';
+import { Email } from '../../../domain/Email';
+import { UserDto } from './UserDto';
 
-export function dtoToUsuario(dto: UsuarioDto): Usuario {
-  return new Usuario(dto.id, dto.nombre, new Email(dto.email));
+export function dtoToUser(dto: UserDto): User {
+  return new User(dto.id, dto.name, new Email(dto.email));
 }
 ```
 
-### infraestructura/api/getUsuarios.ts
+### infrastructure/api/getUsers.ts
 
 ```ts
 import { GetUsersResponseDto } from './dto/GetUsersResponseDto';
 
-export async function getUsuarios(params: { query?: string; page?: number; limit?: number }): Promise<GetUsersResponseDto> {
-  const url = new URL('/api/usuarios', window.location.origin);
+export async function getUsers(params: { query?: string; page?: number; limit?: number }): Promise<GetUsersResponseDto> {
+  const url = new URL('/api/users', window.location.origin);
   if (params.query) url.searchParams.set('q', params.query);
   if (params.page) url.searchParams.set('page', String(params.page));
   if (params.limit) url.searchParams.set('limit', String(params.limit));
 
   const res = await fetch(url.toString(), { method: 'GET' });
-  if (!res.ok) throw new Error('No se pudieron obtener los usuarios');
+  if (!res.ok) throw new Error('Could not fetch users');
   return res.json();
 }
 ```
 
-### infraestructura/repositorios/RepositorioDeUsuariosFetch.ts (Adaptador)
+### infrastructure/repositories/UserRepositoryFetch.ts (Adapter)
 
 ```ts
-import { RepositorioDeUsuarios } from '../../dominio/repositorios/RepositorioDeUsuarios';
-import { dtoToUsuario } from '../api/dto/mapper';
-import { getUsuarios } from '../api/getUsuarios';
+import { UserRepository } from '../../domain/repositories/UserRepository';
+import { dtoToUser } from '../api/dto/mapper';
+import { getUsers } from '../api/getUsers';
 
-export class RepositorioDeUsuariosFetch implements RepositorioDeUsuarios {
-  async crear(nombre: string, email: string) {
-    throw new Error('No implementado aquí (ver ejemplo CreateUser)');
+export class UserRepositoryFetch implements UserRepository {
+  async create(name: string, email: string) {
+  throw new Error('Not implemented here (see CreateUser example)');
   }
 
-  async buscar(params: { query?: string; page?: number; limit?: number }) {
-    const resp = await getUsuarios(params);
-    return { items: resp.items.map(dtoToUsuario), total: resp.total };
+  async search(params: { query?: string; page?: number; limit?: number }) {
+  const resp = await getUsers(params);
+  return { items: resp.items.map(dtoToUser), total: resp.total };
   }
 }
 ```
 
-### Uso desde la UI
+### Usage from UI
 
 ```ts
-import { ObtenerUsuarios } from '@/modulos/usuarios/aplicacion/casos-uso/ObtenerUsuarios';
-import { RepositorioDeUsuariosFetch } from '@/modulos/usuarios/infraestructura/repositorios/RepositorioDeUsuariosFetch';
+import { GetUsers } from '@/modules/users/application/use-cases/GetUsers';
+import { UserRepositoryFetch } from '@/modules/users/infrastructure/repositories/UserRepositoryFetch';
 
-export async function buscarUsuariosDesdeUI(query: string) {
-  const repo = new RepositorioDeUsuariosFetch();
-  const caso = new ObtenerUsuarios(repo);
-  return caso.ejecutar({ query, page: 1, limit: 20 });
+export async function searchUsersFromUI(query: string) {
+  const repo = new UserRepositoryFetch();
+  const useCase = new GetUsers(repo);
+  return useCase.execute({ query, page: 1, limit: 20 });
 }
 ```
 
-## Puntos clave
+## Key Points
 
-- El input `FiltroUsuariosInput` es un DTO de aplicación: contrato interno Presentación ↔ Aplicación.
-- `GetUsersResponseDto` y `UsuarioDto` son DTOs de infraestructura: contrato externo HTTP.
-- El repositorio (adaptador) traduce DTO externo → dominio antes de devolver el resultado al caso de uso.
+- `UserFilterInput` is an application DTO: internal contract between Presentation ↔ Application.
+- `GetUsersResponseDto` and `UserDto` are infrastructure DTOs: external HTTP contract.
+- The repository (adapter) translates external DTO → domain before returning the result to the use case.
 
-## Variante con Read Model de Dominio (CQRS)
+## Variant with Domain Read Model (CQRS)
 
-Si tu UI solo necesita una proyección liviana, definí un read model en el dominio y hacé que el puerto de consulta lo devuelva, evitando construir entidades completas:
+If your UI only needs a lightweight projection, define a read model in the domain and have the query port return it, avoiding building full entities:
 
 ```ts
-// dominio/proyecciones/UsuarioListItem.ts
-export interface UsuarioListItem { id: string; nombre: string }
+// domain/projections/UserListItem.ts
+export interface UserListItem { id: string; name: string }
 
-// dominio/repositorios/UsuarioQuery.ts
-import { UsuarioListItem } from '../proyecciones/UsuarioListItem';
-export interface UsuarioQuery {
-  search(params: { q?: string; page?: number; limit?: number }): Promise<{ items: UsuarioListItem[]; total: number }>;
+// domain/repositories/UserQuery.ts
+import { UserListItem } from '../projections/UserListItem';
+export interface UserQuery {
+  search(params: { q?: string; page?: number; limit?: number }): Promise<{ items: UserListItem[]; total: number }>;
 }
 
-// infraestructura/repositorios/UsuarioQueryFetch.ts
-import { UsuarioQuery } from '../../dominio/repositorios/UsuarioQuery';
-import { UsuarioListItem } from '../../dominio/proyecciones/UsuarioListItem';
-import { getUsuarios } from '../api/getUsuarios';
+// infrastructure/repositories/UserQueryFetch.ts
+import { UserQuery } from '../../domain/repositories/UserQuery';
+import { UserListItem } from '../../domain/projections/UserListItem';
+import { getUsers } from '../api/getUsers';
 
-export class UsuarioQueryFetch implements UsuarioQuery {
+export class UserQueryFetch implements UserQuery {
   async search(params: { q?: string; page?: number; limit?: number }) {
-    const { items, total } = await getUsuarios({ query: params.q, page: params.page, limit: params.limit });
-    return { items: items.map(i => ({ id: i.id, nombre: i.nombre }) as UsuarioListItem), total };
+  const { items, total } = await getUsers({ query: params.q, page: params.page, limit: params.limit });
+  return { items: items.map(i => ({ id: i.id, name: i.name }) as UserListItem), total };
   }
 }
 ```
 
-Esto mantiene los DTOs de infraestructura encapsulados y ofrece a la UI un contrato interno estable y optimizado.
+This keeps infrastructure DTOs encapsulated and provides the UI with a stable, optimized internal contract.
+
